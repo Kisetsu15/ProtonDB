@@ -22,6 +22,7 @@ typedef struct {
 
 void create_database(const char* db_name);
 void delete_database(const char* db_name);
+void show_database();
 void create_collection(const char* db_name, const char* collection_name);
 void insert_document(const char* db_name, const char* collection_name, Document* document);
 
