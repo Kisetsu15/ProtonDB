@@ -1,6 +1,7 @@
-#include <stdio.h>
+#include "storage_engine.h"
 
 int main(void) {
-    printf("Hello, World!\n");
+    //create_database("hellDB");
+    delete_database("hellDB");
     return 0;
 }

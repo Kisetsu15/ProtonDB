@@ -3,4 +3,8 @@ project(MicroDB C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(MicroDB main.c)
+add_executable(MicroDB main.c
+        storage_engine.h
+        storage_engine.c
+        database_utils.h
+        database_utils.c)
