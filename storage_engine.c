@@ -4,8 +4,7 @@
 #include "database_utils.h"
 
 char path[128];
-char entry[256];
-char collection[256];
+char meta_file[128];
 
 void create_database(const char* db_name) {
     if (strlen(db_name) + 4 >= sizeof(path)) {
@@ -20,10 +19,9 @@ void create_database(const char* db_name) {
 
     snprintf(path, sizeof(path), "db/%s", db_name);
 
-    if (_mkdir(path) != 0) {
+    if (_mkdir(path) != 0 && !append_entry(DATABASE_META, db_name, path)) {
         perror("fatal: could not create database");
     } else {
-        append_database_entry(DATABASE_META, db_name, path);
         printf("Database '%s' created.\n", db_name);
     }
 }
@@ -35,43 +33,47 @@ void delete_database(const char* db_name) {
     }
 
     snprintf(path, sizeof(path), "db/%s", db_name);
-    snprintf(entry, sizeof(entry), "%s|%s", db_name, path);
 
     delete_dir_content(path);
 
-    if (_rmdir(path) != 0) {
+    if (_rmdir(path) != 0 && !remove_entry(DATABASE_META, db_name)) {
         perror("fatal: could not remove database");
     } else {
-        remove_database_entry(DATABASE_META, entry);
         printf("Database '%s' deleted.\n", db_name);
     }
 }
 
 void show_database() {
     DatabaseInfo dbs[MAX_DATABASES];
-    const int db_count = load_databases(DATABASE_META, dbs, MAX_DATABASES);
+    const int db_count = load_databases(dbs, MAX_DATABASES);
     for (int i = 0; i < db_count; i++) {
         printf("%s\n", dbs[i].name);
     }
 }
 
 void create_collection(const char* db_name, const char* collection_name) {
-    if (strlen(collection_name) + 4 >= sizeof(collection)) {
+    if (!check_database(db_name)) {
+        printf("Database '%s' does not exist.\n", db_name);
+        return;
+    }
+
+    if (strlen(collection_name) + strlen(db_name) + 8 >= sizeof(path)) {
         printf("Collection name too long.\n");
         return;
     }
 
-    snprintf(collection, sizeof(collection), "%s/%s.col", path, collection_name);
+    snprintf(meta_file, sizeof(path), "db/%s/collection.meta", db_name);
+    snprintf(path, sizeof(path), "db/%s/%s.col", db_name, collection_name);
+    append_entry(meta_file, collection_name, path);
 
-    FILE* file = fopen(collection_name, "wb");
-    if (file == NULL) {
-        perror("fatal: could not create collection");
-        return;
+    cJSON* data = cJSON_CreateObject();
+    if (!data && !save_json(path, data)) {
+        perror("fatal: could not create Collection");
     } else {
-        printf("Collection '%s' created.\n", collection_name);
+        printf("Collection '%s' created inside '%s'.\n", collection_name, db_name);
     }
-
-    fclose(file);
 }
+
+
 
 

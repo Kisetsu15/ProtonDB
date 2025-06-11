@@ -3,16 +3,17 @@
 #include <direct.h>
 #include <io.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "database_utils.h"
+#include "cJSON.h"
 
-int check_database(const char* db_name) {
-    DatabaseInfo dbs[MAX_DATABASES];
-    const int db_count = load_databases(DATABASE_META, dbs, MAX_DATABASES);
+bool check_database(const char* db_name) {
+    bool exist = false;
+    cJSON* database_meta = load_json(DATABASE_META);
+    if (cJSON_HasObjectItem(database_meta, db_name)) exist = true;
 
-    for (int i = 0; i < db_count; ++i) {
-        if (strcmp(dbs[i].name, db_name) == 0) return 1;
-    }
-    return 0;
+    cJSON_Delete(database_meta);
+    return exist;
 }
 
 void delete_dir_content(const char* dir_path) {
@@ -20,7 +21,7 @@ void delete_dir_content(const char* dir_path) {
     snprintf(search_path, sizeof(search_path), "%s\\*.*", dir_path);
 
     struct _finddata_t file;
-    intptr_t h = _findfirst(search_path, &file);
+    const intptr_t h = _findfirst(search_path, &file);
     if (h == -1) return;
 
     do {
@@ -34,70 +35,123 @@ void delete_dir_content(const char* dir_path) {
     _findclose(h);
 }
 
-int remove_database_entry(const char* filename, const char* entry) {
-    FILE* src = fopen(filename, "r");
-    if (!src) return 0;
+bool remove_entry(const char* meta_file, const char* db_name) {
+    bool status = false;
+    cJSON* meta = load_json(meta_file);
 
-    FILE* temp = fopen("temp.meta", "w");
-    if (!temp) {
-        fclose(src);
+    if (!meta || !cJSON_IsObject(meta)) {
+        fprintf(stderr, "Error: Could not load or parse JSON file: %s\n", meta_file);
+        if (meta) cJSON_Delete(meta);
+        return false;
+    }
+
+    if (!cJSON_HasObjectItem(meta, db_name)) {
+        cJSON_DeleteItemFromObject(meta, db_name);
+        save_json(meta_file, meta);
+        printf("Database entry '%s' removed successfully.\n", db_name);
+        status = true;
+    } else {
+        printf("Database entry '%s' not found.\n", db_name);
+    }
+
+    cJSON_Delete(meta);
+    return status;
+}
+
+
+bool append_entry(const char* meta_file, const char* db_name, const char* path) {
+    bool status = false;
+    cJSON* meta = load_json(meta_file);
+    if (!meta) {
+        meta = cJSON_CreateObject();
+    }
+
+    if (!cJSON_HasObjectItem(meta, db_name)) {
+        cJSON_AddStringToObject(meta, db_name, path);
+        save_json(meta_file, meta);
+        status = true;
+    } else {
+        printf("Database '%s' already exists.\n", db_name);
+    }
+
+    cJSON_Delete(meta);
+    return status;
+}
+
+cJSON* load_json(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (!file) return NULL;
+
+    fseek(file, 0, SEEK_END);
+    const long len = ftell(file);
+    rewind(file);
+
+    char* data = malloc(len + 1);
+    fread(data, 1, len, file);
+    data[len] = '\0';
+    fclose(file);
+
+    cJSON* dict = cJSON_Parse(data);
+    free(data);
+
+    if (!dict || !cJSON_IsObject(dict)) {
+        if (dict) cJSON_Delete(dict);
+        return NULL;
+    }
+
+    return dict;
+}
+
+bool save_json(const char* filename, cJSON* config) {
+    if (!config || !cJSON_IsObject(config)) {
+        fprintf(stderr, "fatal: Invalid JSON object passed to save_json\n");
+        return false;
+    }
+
+    char* json_string = cJSON_Print(config);
+    if (!json_string) {
+        fprintf(stderr, "fatal: Failed to convert JSON to string\n");
+        return false;
+    }
+
+    FILE* file = fopen(filename, "w");
+    if (!file) {
+        perror("Error opening file for writing");
+        free(json_string);
+        return false;
+    }
+
+    fputs(json_string, file);
+    fclose(file);
+    free(json_string);
+    return true;
+}
+
+int load_databases(DatabaseInfo* db_list, const int max_dbs) {
+    cJSON* config = load_json(DATABASE_META);
+    if (!config || !cJSON_IsObject(config)) {
+        fprintf(stderr, "fatal: Failed to load or parse JSON from %s\n", DATABASE_META);
+        if (config) cJSON_Delete(config);
         return 0;
     }
 
-    char buffer[256];
-    int removed = 0;
-
-    while (fgets(buffer, sizeof(buffer), src)) {
-        buffer[strcspn(buffer, "\n")] = '\0';
-
-        if (strcmp(buffer, entry) == 0) {
-            removed = 1;
-            continue;
-        }
-
-        fprintf(temp, "%s\n", buffer);
-    }
-
-    fclose(src);
-    fclose(temp);
-
-    remove(filename);
-    rename("temp.meta", filename);
-
-    return removed;
-}
-
-void append_database_entry(const char* filename, const char* name, const char* path) {
-    FILE* file = fopen(filename, "a");
-    if (!file) {
-        perror("Failed to open database registry file");
-        return;
-    }
-
-    fprintf(file, "%s|%s\n", name, path);
-    fclose(file);
-}
-
-
-int load_databases(const char* filename, DatabaseInfo* db_list, const int max_dbs) {
-    FILE* file = fopen(filename, "r");
-    if (!file) return 0;
-
-    char line[256];
+    cJSON* item = config->child;
     int count = 0;
 
-    while (fgets(line, sizeof(line), file) && count < max_dbs) {
-        line[strcspn(line, "\n")] = '\0'; // Remove newline
-        char* sep = strchr(line, '|');
-        if (!sep) continue;
+    while (item && count < max_dbs) {
+        if (cJSON_IsString(item)) {
+            strncpy(db_list[count].name, item->string, MAX_DB_NAME - 1);
+            db_list[count].name[MAX_DB_NAME - 1] = '\0';
 
-        *sep = '\0';
+            strncpy(db_list[count].path, item->valuestring, MAX_DB_PATH - 1);
+            db_list[count].path[MAX_DB_PATH - 1] = '\0';
 
-        strncpy(db_list[count].name, line, MAX_DB_NAME);
-        strncpy(db_list[count].path, sep + 1, MAX_DB_PATH);
-        count++;
+            count++;
+        }
+        item = item->next;
     }
 
-    fclose(file);
+    cJSON_Delete(config);
     return count;
 }
+

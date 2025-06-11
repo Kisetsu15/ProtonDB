@@ -7,4 +7,6 @@ add_executable(MicroDB main.c
         storage_engine.h
         storage_engine.c
         database_utils.h
-        database_utils.c)
+        database_utils.c
+        cJSON.h
+        cJSON.c)
