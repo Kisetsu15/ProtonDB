@@ -17,9 +17,9 @@ void create_database(const char* db_name) {
         return;
     }
 
-    snprintf(path, sizeof(path), "db/%s", db_name);
+    get_database_dir(path, db_name, sizeof(path));
 
-    if (_mkdir(path) != 0 && !append_entry(DATABASE_META, db_name, path)) {
+    if (_mkdir(path) != 0 || !append_entry(DATABASE_META, db_name, path, database)) {
         perror("fatal: could not create database");
     } else {
         printf("Database '%s' created.\n", db_name);
@@ -32,11 +32,10 @@ void delete_database(const char* db_name) {
         return;
     }
 
-    snprintf(path, sizeof(path), "db/%s", db_name);
-
+    get_database_dir(path, db_name, sizeof(path));
     delete_dir_content(path);
 
-    if (_rmdir(path) != 0 && !remove_entry(DATABASE_META, db_name)) {
+    if (_rmdir(path) != 0 || !remove_entry(DATABASE_META, db_name, database)) {
         perror("fatal: could not remove database");
     } else {
         printf("Database '%s' deleted.\n", db_name);
@@ -44,11 +43,24 @@ void delete_database(const char* db_name) {
 }
 
 void show_database() {
-    DatabaseInfo dbs[MAX_DATABASES];
-    const int db_count = load_databases(dbs, MAX_DATABASES);
-    for (int i = 0; i < db_count; i++) {
-        printf("%s\n", dbs[i].name);
+    cJSON* database_meta = load_json(DATABASE_META);
+    if (!database_meta || !cJSON_IsObject(database_meta)) {
+        fprintf(stderr, "fatal: Failed to load or parse database metadata.\n");
+        if (database_meta) cJSON_Delete(database_meta);
+        return;
     }
+
+    cJSON* item = database_meta->child;
+    if (!item) {
+        printf("No Database found.\n");
+    }
+
+    while (item) {
+        printf("%s\n", item->string);
+        item = item->next;
+    }
+
+    cJSON_Delete(database_meta);
 }
 
 void create_collection(const char* db_name, const char* collection_name) {
@@ -62,16 +74,58 @@ void create_collection(const char* db_name, const char* collection_name) {
         return;
     }
 
-    snprintf(meta_file, sizeof(path), "db/%s/collection.meta", db_name);
-    snprintf(path, sizeof(path), "db/%s/%s.col", db_name, collection_name);
-    append_entry(meta_file, collection_name, path);
+    get_collection_meta(meta_file, db_name, sizeof(meta_file));
+    get_collection_file(path, db_name, collection_name, sizeof(path));
+
+    if (!append_entry(meta_file, collection_name, path, collection)) return;
 
     cJSON* data = cJSON_CreateObject();
-    if (!data && !save_json(path, data)) {
+    if (!data || !dump_binary(path, data)) {
         perror("fatal: could not create Collection");
     } else {
-        printf("Collection '%s' created inside '%s'.\n", collection_name, db_name);
+        printf("Collection '%s' created.\n", collection_name);
     }
+
+    cJSON_Delete(data);
+}
+
+void delete_collection(const char* db_name, const char* collection_name) {
+    if (!check_database(db_name)) {
+        printf("Database '%s' doesn't exist.\n", db_name);
+        return;
+    }
+    get_collection_meta(meta_file, db_name, sizeof(meta_file));
+    if (remove_entry(meta_file, collection_name, collection)) {
+        get_collection_file(path, db_name, collection_name, sizeof(path));
+        remove(path);
+        printf("Collection '%s' deleted.\n", collection_name);
+    } else {
+        printf("fatal: could not delete collection '%s'\n", collection_name);
+    }
+
+}
+
+void show_collection(const char* db_name) {
+    get_collection_meta(path, db_name, sizeof(path));
+
+    cJSON* collection_meta = load_json(path);
+    if (!collection_meta || !cJSON_IsObject(collection_meta)) {
+        fprintf(stderr, "fatal: Failed to load or parse collection metadata for '%s'\n", db_name);
+        if (collection_meta) cJSON_Delete(collection_meta);
+        return;
+    }
+
+    cJSON* item = collection_meta->child;
+    if (!item) {
+        printf("No collections found in database '%s'.\n", db_name);
+    }
+
+    while (item) {
+        printf("%s\n", item->string);
+        item = item->next;
+    }
+
+    cJSON_Delete(collection_meta);
 }
 
 

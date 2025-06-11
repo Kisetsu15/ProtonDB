@@ -35,7 +35,8 @@ void delete_dir_content(const char* dir_path) {
     _findclose(h);
 }
 
-bool remove_entry(const char* meta_file, const char* db_name) {
+bool remove_entry(const char* meta_file, const char* name, const FileType file_type) {
+    const char* file_str = file_type_str(file_type);
     bool status = false;
     cJSON* meta = load_json(meta_file);
 
@@ -45,13 +46,12 @@ bool remove_entry(const char* meta_file, const char* db_name) {
         return false;
     }
 
-    if (!cJSON_HasObjectItem(meta, db_name)) {
-        cJSON_DeleteItemFromObject(meta, db_name);
+    if (cJSON_HasObjectItem(meta, name)) {
+        cJSON_DeleteItemFromObject(meta, name);
         save_json(meta_file, meta);
-        printf("Database entry '%s' removed successfully.\n", db_name);
         status = true;
     } else {
-        printf("Database entry '%s' not found.\n", db_name);
+        printf("%s entry '%s' not found.\n", file_str, name);
     }
 
     cJSON_Delete(meta);
@@ -59,27 +59,105 @@ bool remove_entry(const char* meta_file, const char* db_name) {
 }
 
 
-bool append_entry(const char* meta_file, const char* db_name, const char* path) {
+bool append_entry(const char* meta_file, const char* name, const char* path, const FileType file_type) {
+    const char* file_str = file_type_str(file_type);
     bool status = false;
     cJSON* meta = load_json(meta_file);
     if (!meta) {
         meta = cJSON_CreateObject();
     }
 
-    if (!cJSON_HasObjectItem(meta, db_name)) {
-        cJSON_AddStringToObject(meta, db_name, path);
+    if (!cJSON_HasObjectItem(meta, name)) {
+        cJSON_AddStringToObject(meta, name, path);
         save_json(meta_file, meta);
         status = true;
     } else {
-        printf("Database '%s' already exists.\n", db_name);
+        printf("%s '%s' already exists.\n", file_str, name);
     }
 
     cJSON_Delete(meta);
     return status;
 }
 
-cJSON* load_json(const char* filename) {
-    FILE* file = fopen(filename, "r");
+const char* file_type_str(const FileType file_type) {
+    switch (file_type) {
+        case database: return "Database";
+        case collection: return "Collection";
+        default: return "Unknown";
+    }
+}
+
+bool dump_binary(const char* file_name, const cJSON* data) {
+    if (!cJSON_IsObject(data)) {
+        fprintf(stderr, "fatal: Invalid JSON object\n");
+        return false;
+    }
+
+    char* data_str;
+    if (data != NULL) {
+        data_str = cJSON_PrintUnformatted(data);
+    } else {
+        data_str = "[]";
+    }
+
+    if (!data_str) {
+        fprintf(stderr, "fatal: Failed to convert JSON to string\n");
+        return false;
+    }
+
+    FILE* file = fopen(file_name, "wb");
+    if (!file) {
+        perror("fatal: Could not open file for writing");
+        free(data_str);
+        return false;
+    }
+
+    fwrite(data_str, sizeof(char), strlen(data_str), file);
+    fclose(file);
+    free(data_str);
+    return true;
+}
+
+cJSON* load_binary(const char* file_name) {
+    FILE* file = fopen(file_name, "rb");  // fixed: use `file_name` instead of hardcoded "data.bin"
+    if (!file) {
+        perror("fatal: Could not open file for reading");
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long len = ftell(file);
+    if (len <= 0) {
+        fclose(file);
+        fprintf(stderr, "fatal: File is empty or unreadable\n");
+        return NULL;
+    }
+
+    rewind(file);
+    char* buffer = malloc(len + 1);
+    if (!buffer) {
+        fclose(file);
+        fprintf(stderr, "fatal: Memory allocation failed\n");
+        return NULL;
+    }
+
+    fread(buffer, 1, len, file);
+    buffer[len] = '\0';
+    fclose(file);
+
+    cJSON* json = cJSON_Parse(buffer);
+    free(buffer);
+
+    if (!json) {
+        fprintf(stderr, "fatal: Failed to parse JSON from binary\n");
+    }
+
+    return json;
+}
+
+
+cJSON* load_json(const char* file_name) {
+    FILE* file = fopen(file_name, "r");
     if (!file) return NULL;
 
     fseek(file, 0, SEEK_END);
@@ -127,31 +205,18 @@ bool save_json(const char* filename, cJSON* config) {
     return true;
 }
 
-int load_databases(DatabaseInfo* db_list, const int max_dbs) {
-    cJSON* config = load_json(DATABASE_META);
-    if (!config || !cJSON_IsObject(config)) {
-        fprintf(stderr, "fatal: Failed to load or parse JSON from %s\n", DATABASE_META);
-        if (config) cJSON_Delete(config);
-        return 0;
-    }
 
-    cJSON* item = config->child;
-    int count = 0;
-
-    while (item && count < max_dbs) {
-        if (cJSON_IsString(item)) {
-            strncpy(db_list[count].name, item->string, MAX_DB_NAME - 1);
-            db_list[count].name[MAX_DB_NAME - 1] = '\0';
-
-            strncpy(db_list[count].path, item->valuestring, MAX_DB_PATH - 1);
-            db_list[count].path[MAX_DB_PATH - 1] = '\0';
-
-            count++;
-        }
-        item = item->next;
-    }
-
-    cJSON_Delete(config);
-    return count;
+void get_collection_file(char* array, const char* db_name, const char* name, const int size) {
+    snprintf(array, size, "%s/%s/%s.col", DATABASE, db_name, name);
 }
+
+void get_collection_meta(char* array, const char* db_name, const int size) {
+    snprintf(array, size, "%s/%s/%s", DATABASE, db_name, COLLECTION_META);
+}
+
+void get_database_dir(char* array, const char* db_name, const int size) {
+    snprintf(array, size, "%s/%s", DATABASE, db_name);
+}
+
+
 
