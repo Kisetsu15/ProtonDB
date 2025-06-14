@@ -7,6 +7,8 @@
 #include "DatabaseUtils.h"
 #include "cJSON.h"
 
+char* pair = NULL;
+
 bool CheckDatabase(const char* databaseName) {
     bool exist = false;
     cJSON* databaseMeta = LoadJson(DATABASE_META);
@@ -201,19 +203,19 @@ bool SaveJson(const char* filename, cJSON* config) {
     return true;
 }
 
-void PrintFilteredDocuments(const cJSON* array, const char* key, const char* value, const Condition condition) {
+void PrintFilteredDocuments(const cJSON* collection, const char* key, const char* value, const Condition condition) {
     if (condition < equal || condition > all) {
         printf("Invalid condition specified.\n");
         return;
     }
 
-    if (!array || !cJSON_IsArray(array)) {
+    if (!collection || !cJSON_IsArray(collection)) {
         printf("Not a valid JSON array.\n");
         return;
     }
 
     const cJSON* item = NULL;
-    cJSON_ArrayForEach(item, array) {
+    cJSON_ArrayForEach(item, collection) {
         if (condition == all || key == NULL || value == NULL) {
             PrintItem(item);
         } else {
@@ -250,7 +252,7 @@ int DeleteFilteredDocuments(cJSON* collection, const char* key, const char* valu
     if (!collection || !cJSON_IsArray(collection)) {
         return -1;
     }
-    bool filterEnabled = !(condition == all || key == NULL || value == NULL);
+    const bool filterEnabled = !(condition == all || key == NULL || value == NULL);
     const int size = cJSON_GetArraySize(collection);
     int deletedCount = 0;
 
@@ -284,6 +286,122 @@ int DeleteFilteredDocuments(cJSON* collection, const char* key, const char* valu
 
     return deletedCount;
 }
+
+int UpdateFilteredDocuments(cJSON *collection, const char *key, const char *value, const Condition condition, const Action action, const char *param) {
+    if (!collection || !cJSON_IsArray(collection)) return -1;
+
+    const bool filterEnabled = !(condition == all || key == NULL || value == NULL);
+    const int size = cJSON_GetArraySize(collection);
+    int updatedCount = 0;
+
+    for (int i = 0; i < size; i++) {
+        cJSON *item = cJSON_GetArrayItem(collection, i);
+        bool match = false;
+
+        if (filterEnabled) {
+            cJSON *field = cJSON_GetObjectItem(item, key);
+            if (!field) continue;
+
+            if (cJSON_IsNumber(field)) {
+                match = IsRelated(field->valuedouble, atof(value), condition);
+            } else if (cJSON_IsString(field)) {
+                match = strcmp(field->valuestring, value) == 0;
+            } else if (cJSON_IsBool(field)) {
+                match = ((strcmp(value, "true") == 0 && field->valueint == 1) ||
+                         (strcmp(value, "false") == 0 && field->valueint == 0));
+            } else {
+                continue;
+            }
+        } else {
+            match = true;
+        }
+
+        if (match) {
+            updatedCount++;
+            switch (action) {
+                case add:
+                    AddAction(item, param);
+                    break;
+                case drop:
+                    DropAction(item, param);
+                    break;
+                case alter:
+                    AlterAction(item, param);
+                    break;
+                default:
+                    fprintf(stderr, "Invalid action.\n");
+                    updatedCount--;
+                    break;
+            }
+        }
+    }
+    return updatedCount;
+}
+
+
+void AddAction(cJSON* item, const char* param) {
+    cJSON* temp = cJSON_Parse(param);
+    if (!temp || !cJSON_IsObject(temp)) {
+        fprintf(stderr, "Invalid add param: %s\n", param);
+        if (temp) cJSON_Delete(temp);
+        return;
+    }
+
+    cJSON* field = NULL;
+    cJSON_ArrayForEach(field, temp) {
+        cJSON* copy = cJSON_Duplicate(field, 1);
+        cJSON_AddItemToObject(item, field->string, copy);
+    }
+
+    cJSON_Delete(temp);
+}
+
+
+void DropAction(cJSON* item, const char* param) {
+    cJSON* temp = cJSON_Parse(param);
+    if (!temp || !cJSON_IsString(temp)) {
+        fprintf(stderr, "Invalid drop param: %s\n", param);
+        if (temp) cJSON_Delete(temp);
+        return;
+    }
+
+    cJSON_DeleteItemFromObject(item, temp->valuestring);
+    cJSON_Delete(temp);
+}
+
+
+void AlterAction(cJSON* item, const char* param) {
+    cJSON* temp = cJSON_Parse(param);
+    if (!temp || !cJSON_IsObject(temp)) {
+        fprintf(stderr, "Invalid alter param: %s\n", param);
+        if (temp) cJSON_Delete(temp);
+        return;
+    }
+
+    cJSON* value = temp->child;
+    if (!value || !value->string) {
+        cJSON_Delete(temp);
+        return;
+    }
+
+    cJSON* new_value = NULL;
+    if (cJSON_IsString(value)) {
+        new_value = cJSON_CreateString(value->valuestring);
+    } else if (cJSON_IsNumber(value)) {
+        new_value = cJSON_CreateNumber(value->valuedouble);
+    } else if (cJSON_IsBool(value)) {
+        new_value = cJSON_CreateBool(value->valueint);
+    } else {
+        fprintf(stderr, "Unsupported value type in param.\n");
+        cJSON_Delete(temp);
+        return;
+    }
+
+    cJSON_ReplaceItemInObject(item, value->string, new_value);
+
+    cJSON_Delete(temp);
+}
+
 
 bool IsRelated(const double value1, const double value2, const Condition condition) {
     switch (condition) {

@@ -198,6 +198,33 @@ void DeleteAllDocuments(const char* databaseName, const char* collectionName) {
     DeleteDocuments(databaseName, collectionName, NULL, NULL, all);
 }
 
+void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* param) {
+    GetCollectionFile(path, databaseName, collectionName, sizeof(path));
+    cJSON* collection = LoadBinary(path);
+    if (!collection || !cJSON_IsArray(collection)) {
+        fprintf(stderr, "fatal: Failed to load or parse collection for '%s'\n", databaseName);
+        if (collection) cJSON_Delete(collection);
+        return;
+    }
+
+    const int updatedCount = UpdateFilteredDocuments(collection, key, value, condition, action, param);
+
+    if (updatedCount > 0) {
+        DumpBinary(path, collection);
+        printf("Document updated %d\n", updatedCount);
+    } else if (updatedCount < 0) {
+        fprintf(stderr, "fatal: Failed to delete due to invalid JSON format\n");
+    } else {
+        printf("No document found for given condition\n");
+    }
+
+    cJSON_Delete(collection);
+}
+
+void UpdateAllDocuments(const char* databaseName, const char* collectionName, const Action action, const char* param) {
+    UpdateDocuments(databaseName, collectionName, NULL, NULL, all, action, param);
+}
+
 
 
 
