@@ -3,18 +3,18 @@
 
 #include "DatabaseUtils.h"
 
-void CreateDatabase(const char* databaseName);
-void DeleteDatabase(const char* databaseName);
-void ListDatabase();
-void CreateCollection(const char* databaseName, const char* collectionName);
-void DeleteCollection(const char* databaseName, const char* collectionName);
-void ListCollection(const char* databaseName);
-void InsertDocument(const char* databaseName, const char* collectionName, const char* document);
-void DeleteDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, Condition condition);
-void DeleteAllDocuments(const char* databaseName, const char* collectionName);
-void PrintAllDocuments(const char* databaseName, const char* collectionName);
-void PrintDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, Condition condition);
-void UpdateAllDocuments(const char* databaseName, const char* collectionName, const Action action, const char* param);
-void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* param);
+__declspec(dllexport) void CreateDatabase(const char* databaseName);
+__declspec(dllexport) void DeleteDatabase(const char* databaseName);
+__declspec(dllexport) void ListDatabase();
+__declspec(dllexport) void CreateCollection(const char* databaseName, const char* collectionName);
+__declspec(dllexport) void DeleteCollection(const char* databaseName, const char* collectionName);
+__declspec(dllexport) void ListCollection(const char* databaseName);
+__declspec(dllexport) void InsertDocument(const char* databaseName, const char* collectionName, const char* document);
+__declspec(dllexport) void DeleteDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, Condition condition);
+__declspec(dllexport) void DeleteAllDocuments(const char* databaseName, const char* collectionName);
+__declspec(dllexport) void PrintAllDocuments(const char* databaseName, const char* collectionName);
+__declspec(dllexport) void PrintDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, Condition condition);
+__declspec(dllexport) void UpdateAllDocuments(const char* databaseName, const char* collectionName, const Action action, const char* param);
+__declspec(dllexport) void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* param);
 
 #endif //STORAGE_ENGINE_H

@@ -7,7 +7,7 @@
 char path[128];
 char metaFile[128];
 
-void CreateDatabase(const char* databaseName) {
+__declspec(dllexport) void CreateDatabase(const char* databaseName) {
     if (strlen(databaseName) + 4 >= sizeof(path)) {
         printf("Database name too long.\n");
         return;
@@ -27,7 +27,7 @@ void CreateDatabase(const char* databaseName) {
     }
 }
 
-void DeleteDatabase(const char* databaseName) {
+__declspec(dllexport) void DeleteDatabase(const char* databaseName) {
     if (!CheckDatabase(databaseName)) {
         printf("Database '%s' doesn't exists.\n", databaseName);
         return;
@@ -43,7 +43,7 @@ void DeleteDatabase(const char* databaseName) {
     }
 }
 
-void ListDatabase() {
+__declspec(dllexport) void ListDatabase() {
     cJSON* databaseMeta = LoadJson(DATABASE_META);
     if (!databaseMeta || !cJSON_IsObject(databaseMeta)) {
         fprintf(stderr, "fatal: Failed to load or parse database metadata.\n");
@@ -64,7 +64,7 @@ void ListDatabase() {
     cJSON_Delete(databaseMeta);
 }
 
-void CreateCollection(const char* databaseName, const char* collectionName) {
+__declspec(dllexport) void CreateCollection(const char* databaseName, const char* collectionName) {
     if (!CheckDatabase(databaseName)) {
         printf("Database '%s' does not exist.\n", databaseName);
         return;
@@ -90,7 +90,7 @@ void CreateCollection(const char* databaseName, const char* collectionName) {
     cJSON_Delete(data);
 }
 
-void DeleteCollection(const char* databaseName, const char* collectionName) {
+__declspec(dllexport) void DeleteCollection(const char* databaseName, const char* collectionName) {
     if (!CheckDatabase(databaseName)) {
         printf("Database '%s' doesn't exist.\n", databaseName);
         return;
@@ -106,7 +106,7 @@ void DeleteCollection(const char* databaseName, const char* collectionName) {
 
 }
 
-void ListCollection(const char* databaseName) {
+__declspec(dllexport) void ListCollection(const char* databaseName) {
     GetCollectionsMeta(path, databaseName, sizeof(path));
 
     cJSON* collectionMeta = LoadJson(path);
@@ -129,10 +129,11 @@ void ListCollection(const char* databaseName) {
     cJSON_Delete(collectionMeta);
 }
 
-void InsertDocument(const char* databaseName, const char* collectionName, const char* document) {
+__declspec(dllexport) void InsertDocument(const char* databaseName, const char* collectionName, const char* document) {
     GetCollectionFile(path, databaseName, collectionName, sizeof(path));
     cJSON* root = LoadBinary(path);
     if (!root) {
+        CreateCollection(databaseName, collectionName);
         root = cJSON_CreateArray();
     }
 
@@ -150,12 +151,12 @@ void InsertDocument(const char* databaseName, const char* collectionName, const 
     printf("Inserted\n");
 }
 
-void PrintAllDocuments(const char* databaseName, const char* collectionName) {
+__declspec(dllexport) void PrintAllDocuments(const char* databaseName, const char* collectionName) {
     PrintDocuments(databaseName, collectionName, NULL, NULL, all);
 }
 
 
-void PrintDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition) {
+__declspec(dllexport) void PrintDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition) {
     GetCollectionFile(path, databaseName, collectionName, sizeof(path));
     cJSON* collection = LoadBinary(path);
     if (!collection) {
@@ -171,7 +172,7 @@ void PrintDocuments(const char* databaseName, const char* collectionName, const 
     cJSON_Delete(collection);
 }
 
-void DeleteDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition) {
+__declspec(dllexport) void DeleteDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition) {
     GetCollectionFile(path, databaseName, collectionName, sizeof(path));
     cJSON* collection = LoadBinary(path);
     if (!collection || !cJSON_IsArray(collection)) {
@@ -194,11 +195,11 @@ void DeleteDocuments(const char* databaseName, const char* collectionName, const
     cJSON_Delete(collection);
 }
 
-void DeleteAllDocuments(const char* databaseName, const char* collectionName) {
+__declspec(dllexport) void DeleteAllDocuments(const char* databaseName, const char* collectionName) {
     DeleteDocuments(databaseName, collectionName, NULL, NULL, all);
 }
 
-void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* param) {
+__declspec(dllexport) void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* param) {
     GetCollectionFile(path, databaseName, collectionName, sizeof(path));
     cJSON* collection = LoadBinary(path);
     if (!collection || !cJSON_IsArray(collection)) {
@@ -221,7 +222,7 @@ void UpdateDocuments(const char* databaseName, const char* collectionName, const
     cJSON_Delete(collection);
 }
 
-void UpdateAllDocuments(const char* databaseName, const char* collectionName, const Action action, const char* param) {
+__declspec(dllexport) void UpdateAllDocuments(const char* databaseName, const char* collectionName, const Action action, const char* param) {
     UpdateDocuments(databaseName, collectionName, NULL, NULL, all, action, param);
 }
 

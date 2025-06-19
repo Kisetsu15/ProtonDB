@@ -3,7 +3,7 @@ project(MicroDB C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(MicroDB main.c
+add_library(MicroDB SHARED
         StorageEngine.h
         StorageEngine.c
         DatabaseUtils.h

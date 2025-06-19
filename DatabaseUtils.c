@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <string.h>
-#include <direct.h>
 #include <io.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -204,7 +203,7 @@ bool SaveJson(const char* filename, cJSON* config) {
 }
 
 void PrintFilteredDocuments(const cJSON* collection, const char* key, const char* value, const Condition condition) {
-    if (condition < equal || condition > all) {
+    if (condition > all) {
         printf("Invalid condition specified.\n");
         return;
     }
