@@ -117,7 +117,6 @@ bool DumpBinary(const char* fileName, const cJSON* data) {
 cJSON* LoadBinary(const char* fileName) {
     FILE* file = fopen(fileName, "rb");
     if (!file) {
-        perror("fatal: Could not open file for reading");
         return NULL;
     }
 
@@ -425,6 +424,5 @@ void GetCollectionsMeta(char* array, const char* databaseName, const int size) {
 void GetDatabaseDirectory(char* array, const char* databaseName, const int size) {
     snprintf(array, size, "%s/%s", DATABASE, databaseName);
 }
-
 
 

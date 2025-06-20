@@ -176,7 +176,7 @@ __declspec(dllexport) void DeleteDocuments(const char* databaseName, const char*
     GetCollectionFile(path, databaseName, collectionName, sizeof(path));
     cJSON* collection = LoadBinary(path);
     if (!collection || !cJSON_IsArray(collection)) {
-        fprintf(stderr, "fatal: Failed to load or parse collection for '%s'\n", databaseName);
+        fprintf(stderr, "fatal: Collection file for '%s' not found or empty\n", databaseName);
         if (collection) cJSON_Delete(collection);
         return;
     }
@@ -203,7 +203,7 @@ __declspec(dllexport) void UpdateDocuments(const char* databaseName, const char*
     GetCollectionFile(path, databaseName, collectionName, sizeof(path));
     cJSON* collection = LoadBinary(path);
     if (!collection || !cJSON_IsArray(collection)) {
-        fprintf(stderr, "fatal: Failed to load or parse collection for '%s'\n", databaseName);
+        fprintf(stderr, "fatal: Collection file for '%s' not found or empty\n", databaseName);
         if (collection) cJSON_Delete(collection);
         return;
     }
