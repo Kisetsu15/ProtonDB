@@ -42,7 +42,7 @@ bool RemoveEntry(const char* metaFile, const char* name, const FileType fileType
     cJSON* metaConfig = LoadJson(metaFile);
 
     if (!metaConfig || !cJSON_IsObject(metaConfig)) {
-        fprintf(stderr, "Error: Could not load or parse JSON file: %s\n", metaFile);
+        fprintf(stderr, "fatal: Could not load or parse JSON file: %s\n", metaFile);
         if (metaConfig) cJSON_Delete(metaConfig);
         return false;
     }
@@ -52,7 +52,7 @@ bool RemoveEntry(const char* metaFile, const char* name, const FileType fileType
         SaveJson(metaFile, metaConfig);
         status = true;
     } else {
-        printf("%s entry '%s' not found.\n", fileString, name);
+        printf("fatal: %s entry '%s' not found.\n", fileString, name);
     }
 
     cJSON_Delete(metaConfig);
@@ -73,7 +73,7 @@ bool AppendEntry(const char* metaFile, const char* name, const char* path, const
         SaveJson(metaFile, meta);
         status = true;
     } else {
-        printf("%s '%s' already exists.\n", fileString, name);
+        printf("warning: %s '%s' already exists.\n", fileString, name);
     }
 
     cJSON_Delete(meta);
@@ -190,7 +190,7 @@ bool SaveJson(const char* filename, cJSON* config) {
 
     FILE* file = fopen(filename, "w");
     if (!file) {
-        perror("Error opening file for writing");
+        perror("fatal: Error opening file for writing");
         free(json_string);
         return false;
     }
@@ -203,12 +203,12 @@ bool SaveJson(const char* filename, cJSON* config) {
 
 void PrintFilteredDocuments(const cJSON* collection, const char* key, const char* value, const Condition condition) {
     if (condition > all) {
-        printf("Invalid condition specified.\n");
+        printf("fatal: Invalid condition specified.\n");
         return;
     }
 
     if (!collection || !cJSON_IsArray(collection)) {
-        printf("Not a valid JSON array.\n");
+        printf("fatal: Not a valid array formats.\n");
         return;
     }
 
@@ -285,7 +285,7 @@ int DeleteFilteredDocuments(cJSON* collection, const char* key, const char* valu
     return deletedCount;
 }
 
-int UpdateFilteredDocuments(cJSON *collection, const char *key, const char *value, const Condition condition, const Action action, const char *param) {
+int UpdateFilteredDocuments(cJSON *collection, const char *key, const char *value, const Condition condition, const Action action, const char *data) {
     if (!collection || !cJSON_IsArray(collection)) return -1;
 
     const bool filterEnabled = !(condition == all || key == NULL || value == NULL);
@@ -318,17 +318,17 @@ int UpdateFilteredDocuments(cJSON *collection, const char *key, const char *valu
             updatedCount++;
             switch (action) {
                 case add:
-                    AddAction(item, param);
+                    if (!AddAction(item, data)) return -1;
                     break;
                 case drop:
-                    DropAction(item, param);
+                    if (!DropAction(item, data)) return -1;
                     break;
                 case alter:
-                    AlterAction(item, param);
+                    if (!AlterAction(item, data)) return -1;
                     break;
                 default:
                     fprintf(stderr, "Invalid action.\n");
-                    updatedCount--;
+                    return -1;
                     break;
             }
         }
@@ -337,12 +337,12 @@ int UpdateFilteredDocuments(cJSON *collection, const char *key, const char *valu
 }
 
 
-void AddAction(cJSON* item, const char* param) {
+bool AddAction(cJSON* item, const char* param) {
     cJSON* temp = cJSON_Parse(param);
     if (!temp || !cJSON_IsObject(temp)) {
         fprintf(stderr, "Invalid add param: %s\n", param);
         if (temp) cJSON_Delete(temp);
-        return;
+        return false;
     }
 
     cJSON* field = NULL;
@@ -352,53 +352,70 @@ void AddAction(cJSON* item, const char* param) {
     }
 
     cJSON_Delete(temp);
+    return true;
 }
 
 
-void DropAction(cJSON* item, const char* param) {
+bool DropAction(cJSON* item, const char* param) {
     cJSON* temp = cJSON_Parse(param);
     if (!temp || !cJSON_IsString(temp)) {
         fprintf(stderr, "Invalid drop param: %s\n", param);
         if (temp) cJSON_Delete(temp);
-        return;
+        return false;;
     }
 
     cJSON_DeleteItemFromObject(item, temp->valuestring);
     cJSON_Delete(temp);
+    return true;
 }
 
 
-void AlterAction(cJSON* item, const char* param) {
+bool AlterAction(cJSON* item, const char* param) {
     cJSON* temp = cJSON_Parse(param);
     if (!temp || !cJSON_IsObject(temp)) {
         fprintf(stderr, "Invalid alter param: %s\n", param);
         if (temp) cJSON_Delete(temp);
-        return;
+        return false;
     }
 
     cJSON* value = temp->child;
     if (!value || !value->string) {
         cJSON_Delete(temp);
-        return;
+        return false;
     }
 
+    bool match = false;
     cJSON* new_value = NULL;
+
     if (cJSON_IsString(value)) {
         new_value = cJSON_CreateString(value->valuestring);
+        match = true;
     } else if (cJSON_IsNumber(value)) {
         new_value = cJSON_CreateNumber(value->valuedouble);
+        match = true;
     } else if (cJSON_IsBool(value)) {
         new_value = cJSON_CreateBool(value->valueint);
+        match = true;
+    } else if (cJSON_IsArray(value)) {
+        new_value = cJSON_Duplicate(value, 1);
+        match = true;
+    } else if (cJSON_IsObject(value)) {
+        new_value = cJSON_Duplicate(value, 1);
+        match = true;
     } else {
-        fprintf(stderr, "Unsupported value type in param.\n");
-        cJSON_Delete(temp);
-        return;
+        fprintf(stderr, "Unsupported value type in data.\n");
     }
 
-    cJSON_ReplaceItemInObject(item, value->string, new_value);
+    if (match) {
+        cJSON_ReplaceItemInObject(item, value->string, new_value);
+    } else {
+        cJSON_Delete(new_value);
+    }
 
     cJSON_Delete(temp);
+    return match;
 }
+
 
 
 bool IsRelated(const double value1, const double value2, const Condition condition) {

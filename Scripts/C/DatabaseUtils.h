@@ -41,12 +41,12 @@ cJSON* LoadBinary(const char* fileName);
 void PrintItem(const cJSON* item);
 void PrintFilteredDocuments(const cJSON* collection, const char* key, const char* value, Condition condition);
 int DeleteFilteredDocuments(cJSON* collection, const char* key, const char* value, Condition condition);
-int UpdateFilteredDocuments(cJSON *collection, const char *key, const char *value, const Condition condition, const Action action, const char *param);
+int UpdateFilteredDocuments(cJSON *collection, const char *key, const char *value, const Condition condition, const Action action, const char *data);
 bool IsRelated(double value1, double value2, Condition condition);
 
-void AddAction(cJSON* item, const char* param);
-void DropAction(cJSON* item, const char* param);
-void AlterAction(cJSON* item, const char* param);
+bool AddAction(cJSON* item, const char* param);
+bool DropAction(cJSON* item, const char* param);
+bool AlterAction(cJSON* item, const char* param);
 
 bool AppendEntry(const char* metaFile, const char* name, const char* path, FileType fileType);
 bool RemoveEntry(const char* metaFile, const char* name, FileType fileType);

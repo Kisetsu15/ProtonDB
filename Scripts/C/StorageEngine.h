@@ -14,7 +14,7 @@ __declspec(dllexport) void DeleteDocuments(const char* databaseName, const char*
 __declspec(dllexport) void DeleteAllDocuments(const char* databaseName, const char* collectionName);
 __declspec(dllexport) void PrintAllDocuments(const char* databaseName, const char* collectionName);
 __declspec(dllexport) void PrintDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, Condition condition);
-__declspec(dllexport) void UpdateAllDocuments(const char* databaseName, const char* collectionName, const Action action, const char* param);
-__declspec(dllexport) void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* param);
+__declspec(dllexport) void UpdateAllDocuments(const char* databaseName, const char* collectionName, const Action action, const char* data);
+__declspec(dllexport) void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* data);
 
 #endif //STORAGE_ENGINE_H

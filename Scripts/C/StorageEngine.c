@@ -9,12 +9,12 @@ char metaFile[128];
 
 __declspec(dllexport) void CreateDatabase(const char* databaseName) {
     if (strlen(databaseName) + 4 >= sizeof(path)) {
-        printf("Database name too long.\n");
+        printf("warning: Database name too long.\n");
         return;
     }
 
     if (CheckDatabase(databaseName)) {
-        printf("Database '%s' already exists.\n", databaseName);
+        printf("warning: Database '%s' already exists.\n", databaseName);
         return;
     }
 
@@ -29,7 +29,7 @@ __declspec(dllexport) void CreateDatabase(const char* databaseName) {
 
 __declspec(dllexport) void DeleteDatabase(const char* databaseName) {
     if (!CheckDatabase(databaseName)) {
-        printf("Database '%s' doesn't exists.\n", databaseName);
+        printf("fatal: Database '%s' doesn't exists.\n", databaseName);
         return;
     }
 
@@ -66,12 +66,12 @@ __declspec(dllexport) void ListDatabase() {
 
 __declspec(dllexport) void CreateCollection(const char* databaseName, const char* collectionName) {
     if (!CheckDatabase(databaseName)) {
-        printf("Database '%s' does not exist.\n", databaseName);
+        printf("fatal: Database '%s' does not exist.\n", databaseName);
         return;
     }
 
     if (strlen(collectionName) + strlen(databaseName) + 8 >= sizeof(path)) {
-        printf("Collection name too long.\n");
+        printf("warning: Collection name too long.\n");
         return;
     }
 
@@ -82,7 +82,7 @@ __declspec(dllexport) void CreateCollection(const char* databaseName, const char
 
     cJSON* data = cJSON_CreateArray();
     if (!data || !DumpBinary(path, data)) {
-        perror("fatal: could not create Collection");
+        perror("fatal: Could not create Collection");
     } else {
         printf("Collection '%s' created.\n", collectionName);
     }
@@ -92,7 +92,7 @@ __declspec(dllexport) void CreateCollection(const char* databaseName, const char
 
 __declspec(dllexport) void DeleteCollection(const char* databaseName, const char* collectionName) {
     if (!CheckDatabase(databaseName)) {
-        printf("Database '%s' doesn't exist.\n", databaseName);
+        printf("fatal: Database '%s' doesn't exist.\n", databaseName);
         return;
     }
     GetCollectionsMeta(metaFile, databaseName, sizeof(metaFile));
@@ -101,7 +101,7 @@ __declspec(dllexport) void DeleteCollection(const char* databaseName, const char
         remove(path);
         printf("Collection '%s' deleted.\n", collectionName);
     } else {
-        printf("fatal: could not delete collection '%s'\n", collectionName);
+        printf("fatal: Could not delete collection '%s'\n", collectionName);
     }
 
 }
@@ -139,7 +139,7 @@ __declspec(dllexport) void InsertDocument(const char* databaseName, const char* 
 
     cJSON* parsedDocument = cJSON_Parse(document);
     if (!parsedDocument || !cJSON_IsObject(parsedDocument)) {
-        fprintf(stderr, "Invalid JSON document format.\n");
+        fprintf(stderr, "fatal: Invalid document format.\n");
         cJSON_Delete(parsedDocument);
         cJSON_Delete(root);
         return;
@@ -164,7 +164,7 @@ __declspec(dllexport) void PrintDocuments(const char* databaseName, const char* 
         return;
     }
     if (!cJSON_IsArray(collection)) {
-        fprintf(stderr, "fatal: Malformed JSON array in collection '%s'\n", databaseName);
+        fprintf(stderr, "fatal: Malformed array in collection '%s'\n", databaseName);
         cJSON_Delete(collection);
         return;
     }
@@ -199,7 +199,7 @@ __declspec(dllexport) void DeleteAllDocuments(const char* databaseName, const ch
     DeleteDocuments(databaseName, collectionName, NULL, NULL, all);
 }
 
-__declspec(dllexport) void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* param) {
+__declspec(dllexport) void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* data) {
     GetCollectionFile(path, databaseName, collectionName, sizeof(path));
     cJSON* collection = LoadBinary(path);
     if (!collection || !cJSON_IsArray(collection)) {
@@ -208,13 +208,13 @@ __declspec(dllexport) void UpdateDocuments(const char* databaseName, const char*
         return;
     }
 
-    const int updatedCount = UpdateFilteredDocuments(collection, key, value, condition, action, param);
+    const int updatedCount = UpdateFilteredDocuments(collection, key, value, condition, action, data);
 
     if (updatedCount > 0) {
         DumpBinary(path, collection);
         printf("Document updated %d\n", updatedCount);
     } else if (updatedCount < 0) {
-        fprintf(stderr, "fatal: Failed to delete due to invalid JSON format\n");
+        fprintf(stderr, "fatal: Failed to update due to invalid format\n");
     } else {
         printf("No document found for given condition\n");
     }
@@ -222,8 +222,8 @@ __declspec(dllexport) void UpdateDocuments(const char* databaseName, const char*
     cJSON_Delete(collection);
 }
 
-__declspec(dllexport) void UpdateAllDocuments(const char* databaseName, const char* collectionName, const Action action, const char* param) {
-    UpdateDocuments(databaseName, collectionName, NULL, NULL, all, action, param);
+__declspec(dllexport) void UpdateAllDocuments(const char* databaseName, const char* collectionName, const Action action, const char* data) {
+    UpdateDocuments(databaseName, collectionName, NULL, NULL, all, action, data);
 }
 
 
