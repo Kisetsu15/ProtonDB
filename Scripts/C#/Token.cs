@@ -27,6 +27,7 @@ namespace ProtonDB {
         public const string protonDB = "protonDB";
         public const string _help = ":h";   
         public const string _quit = ":q";
+        public const string _version = ":v";
 
     }
 }

@@ -18,7 +18,7 @@ namespace ProtonDB {
                 StorageEngine.DeleteAllDocuments(Master.CurrentDatabase, query.Object);
                 return;
             }
-            var condition = ConditionParser(query.Argument.Strip(' '));
+            var condition = ConditionParser(query.Argument);
             if (condition == null) {
                 Terminal.WriteLine("Invalid condition format. Use: key<condition>value ");
                 return;
@@ -32,7 +32,7 @@ namespace ProtonDB {
                 return;
             }
 
-            var condition = ConditionParser(query.Argument.Strip(' '));
+            var condition = ConditionParser(query.Argument);
             if (condition == null) {
                 Terminal.WriteLine("Invalid condition format. Use: key<condition>value ");
                 return;
@@ -119,17 +119,6 @@ namespace ProtonDB {
 
             Terminal.WriteLine("Invalid update format. Use: action,data,condition or action,data");
             return null;
-        }
-
-        private static string Strip(this string str, params char[] removeChars) {
-            if (string.IsNullOrEmpty(str)) return str;
-
-            var removeSet = new HashSet<char>(removeChars);
-            var sb = new StringBuilder(str.Length);
-            foreach (var c in str) {
-                if (!removeSet.Contains(c)) sb.Append(c);
-            }
-            return sb.ToString();
         }
 
         private static (string key, string value, Condition condition)? ConditionParser(string argument) {

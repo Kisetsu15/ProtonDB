@@ -5,10 +5,15 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ApplicationIcon>protondb_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kisetsu.Utils" Version="1.0.3" />
+    <Content Include="protondb_icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Kisetsu.Utils" Version="1.0.4" />
   </ItemGroup>
 
 </Project>

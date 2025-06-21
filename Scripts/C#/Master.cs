@@ -1,4 +1,5 @@
 ﻿using Kisetsu.Utils;
+using System.Reflection;
 
 namespace ProtonDB {
 
@@ -24,6 +25,10 @@ namespace ProtonDB {
                     ShowHelp();
                     continue;
                 }
+                if (input.Equals(Token._version, StringComparison.OrdinalIgnoreCase)) {
+                    ShowVersion();
+                    continue;
+                }
                 Parser.Execute(input);
             }
         }
@@ -35,6 +40,8 @@ namespace ProtonDB {
             }
             Databases = Json.Load<string>(Path.Combine(DatabaseDirectory, Token.databaseMetaFile));
         }
+
+        private static void ShowVersion() => Terminal.WriteLine($"ProtonDB v{Assembly.GetExecutingAssembly().GetName().Version}");
 
         private static void ShowHelp() {
 
@@ -68,6 +75,7 @@ namespace ProtonDB {
             Terminal.WriteLine("\nCommands:");
             Terminal.WriteLine("  protondb                        Open ProtonDB");
             Terminal.WriteLine("  :h                             Show this help message");
+            Terminal.WriteLine("  :v                             Show ProtonDB version");
             Terminal.WriteLine("  :q                             Exit ProtonDB\n");
         }
     }
