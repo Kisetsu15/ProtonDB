@@ -45,48 +45,80 @@ namespace MicroDB {
                 Terminal.WriteLine("Update requires a condition argument");
                 return;
             }
-
-            string argument = query.Argument.Trim();
+            string argument = query.Argument;
             if (!argument.Contains('{') || !argument.Contains('}')) {
                 Terminal.WriteLine("Invalid update format. data must be a object like {\"key\": value}");
                 return;
             }
+            var component = ParseUpdateArgument(argument);
+            if (component == null) return;
 
-            var match = Regex.Match(argument, @"^(?<action>\w+)\,\{(?<data>.+)\}\,(?<condition>.+)$");
-
-            string action;
-            string data;
-
-            if (!match.Success) {
-                match = Regex.Match(argument, @"^(?<action>\w+)\,\{(?<data>.+)\}$");
-                if (!match.Success) {
-                    Terminal.WriteLine("Invalid update format. Use: action,data,condition or action,data");
-                    return;
-                }
-                action = match.Groups[Token.action].Value;
-                data = match.Groups[Token.data].Value;
-
-                data = (action == Token.drop) ? $"\"{data.Trim('"')}\"" : "{" + data + "}";
-
-                StorageEngine.UpdateAllDocuments(Master.CurrentDatabase, query.Object, GetAction(action.Trim()), data);
+            Action action = component.Value.action;
+            string data = component.Value.data;
+            if (component.Value.condition == null) {
+                StorageEngine.UpdateAllDocuments(Master.CurrentDatabase, query.Object, action, data);
                 return;
             }
-
-
-            action = match.Groups[Token.action].Value;
-            data = match.Groups[Token.data].Value;
-            var condition = ConditionParser(match.Groups[Token.condition].Value);
-
-            data = (action == Token.drop) ? data.Strip('"') : "{" + data + "}";
-
+            var condition = ConditionParser(component.Value.condition);
             if (condition == null) {
                 Terminal.WriteLine("Invalid condition format. Use: key<condition>value ");
                 return;
             }
+            StorageEngine.UpdateDocuments(Master.CurrentDatabase, query.Object, condition.Value.key, condition.Value.value, condition.Value.condition, action, data);
+        }
 
-            StorageEngine.UpdateDocuments(Master.CurrentDatabase, query.Object, condition.Value.key, condition.Value.value, condition.Value.condition,
-                GetAction(action.Trim()), data);
+        private enum State {
+            Action,
+            Data,
+            Condition
+        };
 
+        private static (Action action, string data, string? condition)? ParseUpdateArgument(string argument, bool filterEnabled = true) {
+            State state = State.Action;
+            StringBuilder action = new(), data = new(), condition = new();
+            Stack<char> brackets = new();
+            foreach (char i in argument) {
+                switch (state) { 
+                    case State.Action:
+                        if (i == ',') {
+                            state = State.Data;
+                        } else if (i == ' ') {
+                            continue;
+                        } else {
+                            action.Append(i);
+                        }
+                        break;
+                    case State.Data:
+                        if (i == '{') {
+                            brackets.Push(i);
+                            data.Append(i);
+                        } else if (i == '}') {
+                            if (brackets.Count > 0 && brackets.Peek() == '{') brackets.Pop();
+                            data.Append(i);
+                        } else if (i == ',' && brackets.Count == 0) {
+                            state = State.Condition;
+                        } else if (i == ' ' && brackets.Count == 0) {
+                            continue;
+                        } else {
+                            data.Append(i);
+                        }
+                        break;
+                    case State.Condition:
+                        if (i == ' ') {
+                            continue;
+                        } else {
+                            condition.Append(i);
+                        }
+                        break;
+                }
+            }
+
+            if (state == State.Condition && brackets.Count == 0) return (GetAction(action.ToString()), data.ToString(), condition.ToString());
+
+            if (state == State.Data && brackets.Count == 0) return (GetAction(action.ToString()), data.ToString(), null);
+
+            Terminal.WriteLine("Invalid update format. Use: action,data,condition or action,data");
+            return null;
         }
 
         private static string Strip(this string str, params char[] removeChars) {

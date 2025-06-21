@@ -15,6 +15,7 @@ namespace MicroDB {
 
             Master.CurrentDatabase = name;
             if (!Master.Databases.ContainsKey(name)) StorageEngine.CreateDatabase(name);
+            Terminal.WriteLine($"Switched to database: {name}");
         }
 
         public static void Create(string name) => StorageEngine.CreateDatabase(name);
