@@ -1,6 +1,6 @@
 ﻿using Kisetsu.Utils;
 
-namespace MicroDB {
+namespace ProtonDB {
     public static class Database {
         public static void Use(string name) {
             if (string.IsNullOrEmpty(name)) {

@@ -1,7 +1,7 @@
 ﻿using Kisetsu.Utils;
 using System.Text.RegularExpressions;
 
-namespace MicroDB {
+namespace ProtonDB {
 
     public static class Parser {
         public record Query(string Object, string Operation, string? Argument);

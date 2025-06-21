@@ -1,4 +1,4 @@
-namespace MicroDB {
+namespace ProtonDB {
     public static class Token {
         // Query tokens
         public const string _database = "db";
@@ -24,7 +24,7 @@ namespace MicroDB {
         public const string databaseMetaFile = ".database.meta";
 
         // Command tokens
-        public const string microDB = "microDB";
+        public const string protonDB = "protonDB";
         public const string _help = ":h";   
         public const string _quit = ":q";
 

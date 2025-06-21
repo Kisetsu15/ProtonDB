@@ -1,14 +1,14 @@
 ﻿using Kisetsu.Utils;
 
-namespace MicroDB {
+namespace ProtonDB {
 
     public static class Master {
 
-        public const string defaultDatabase = Token.microDB;
+        public const string defaultDatabase = Token.protonDB;
         public static string CurrentDatabase { get => currentDatabase ; set => currentDatabase = value; }
         public static Dictionary<string, string> Databases { get; private set; } = Json.Load<string>(Path.Combine(DatabaseDirectory, Token.databaseMetaFile));
         private static string DatabaseDirectory => Path.Combine(Directory.GetCurrentDirectory(), Token._database);
-        private static string currentDatabase = Token.microDB;
+        private static string currentDatabase = Token.protonDB;
 
         public static void Main() {
 
@@ -17,7 +17,7 @@ namespace MicroDB {
                 string input = Terminal.Input($"{CurrentDatabase}> ");
                 if (string.IsNullOrWhiteSpace(input)) continue;
                 if (input.Equals(Token._quit, StringComparison.OrdinalIgnoreCase)) {
-                    Terminal.WriteLine("Exiting MicroDB...");
+                    Terminal.WriteLine("Exiting ProtonDB...");
                     break;
                 }
                 if (input.Equals(Token._help, StringComparison.OrdinalIgnoreCase)) {
@@ -31,9 +31,9 @@ namespace MicroDB {
         private static void InitializeEnvironment() {
             if (!Directory.Exists(DatabaseDirectory)) {
                 Directory.CreateDirectory(DatabaseDirectory);
-                Database.Create(Token.microDB);
+                Database.Create(Token.protonDB);
             }
-            Databases = Json.Load<string>(Path.Combine(DatabaseDirectory, ".database.meta"));
+            Databases = Json.Load<string>(Path.Combine(DatabaseDirectory, Token.databaseMetaFile));
         }
 
         private static void ShowHelp() {
@@ -66,9 +66,9 @@ namespace MicroDB {
             Terminal.WriteLine("*Note*: data is {\"key\"} for update(drop, data, condition)");
 
             Terminal.WriteLine("\nCommands:");
-            Terminal.WriteLine("  microdb                        Open MicroDB");
+            Terminal.WriteLine("  protondb                        Open ProtonDB");
             Terminal.WriteLine("  :h                             Show this help message");
-            Terminal.WriteLine("  :q                             Exit MicroDB\n");
+            Terminal.WriteLine("  :q                             Exit ProtonDB\n");
         }
     }
 }

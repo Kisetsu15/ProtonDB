@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/MicroDB.iml" filepath="$PROJECT_DIR$/.idea/MicroDB.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ProtonDB.iml" filepath="$PROJECT_DIR$/.idea/ProtonDB.iml" />
     </modules>
   </component>
 </project>

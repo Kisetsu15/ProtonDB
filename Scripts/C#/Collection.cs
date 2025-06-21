@@ -1,4 +1,4 @@
-﻿namespace MicroDB {
+﻿namespace ProtonDB {
     public static class Collection {
         public static void Create(string name) => StorageEngine.CreateCollection(Master.CurrentDatabase, name);
 

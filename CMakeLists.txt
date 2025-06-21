@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.31)
-project(MicroDB C)
+project(ProtonDB C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_library(MicroDB SHARED
+add_library(ProtonDB SHARED
         Scripts/C/StorageEngine.h
         Scripts/C/StorageEngine.c
         Scripts/C/DatabaseUtils.h

@@ -1,9 +1,9 @@
 ﻿using Kisetsu.Utils;
 using System.Text;
 using System.Text.RegularExpressions;
-using static MicroDB.Parser;
+using static ProtonDB.Parser;
 
-namespace MicroDB {
+namespace ProtonDB {
     public static class Document {
         public static void Insert(Query query) {
             if (query.Argument == null) {
