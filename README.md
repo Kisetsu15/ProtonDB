@@ -84,5 +84,3 @@ MIT License — Use, modify, and distribute freely.
 ## ✨ Author
 
 Created with purpose by Kisetsu
-
-```
