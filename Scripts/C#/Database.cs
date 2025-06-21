@@ -1,5 +1,4 @@
 ﻿using Kisetsu.Utils;
-using System.ComponentModel;
 
 namespace MicroDB {
     public static class Database {
@@ -14,21 +13,21 @@ namespace MicroDB {
                 return;
             }
 
-            Master.SetDatabase(name);
+            Master.CurrentDatabase = name;
             if (!Master.Databases.ContainsKey(name)) StorageEngine.CreateDatabase(name);
         }
 
         public static void Create(string name) => StorageEngine.CreateDatabase(name);
 
         public static void Drop(string name) {
-            if (name == null && name == Token._database) {
-                Terminal.WriteLine("Cannot drop the default database", ConsoleColor.Red);
+            if (name == null && name == Master.defaultDatabase) {
+                Terminal.WriteLine("fatal: Cannot drop the default database");
                 return;
             }
 
             if (name == null || name == Master.CurrentDatabase) {
                 StorageEngine.DeleteDatabase(Master.CurrentDatabase);
-                Master.SetDatabase(Token._database);
+                Master.CurrentDatabase = Master.defaultDatabase;
                 return;
             }
 

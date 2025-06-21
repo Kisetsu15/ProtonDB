@@ -1,5 +1,6 @@
 namespace MicroDB {
     public static class Token {
+        // Query tokens
         public const string _database = "db";
         public const string collection = "collection";
         public const string use = "use";
@@ -10,12 +11,22 @@ namespace MicroDB {
         public const string remove = "remove";
         public const string update = "update";
         public const string print = "print";
+
+        // Object tokens
         public const string @object = "object";
         public const string operation = "operation";
         public const string argument = "argument";
         public const string action = "action";
-        public const string param = "param";
+        public const string data = "data";
         public const string condition = "condition";
+
+        // File tokens
+        public const string databaseMetaFile = ".database.meta";
+
+        // Command tokens
+        public const string microDB = "microDB";
+        public const string _help = ":h";   
+        public const string _quit = ":q";
 
     }
 }

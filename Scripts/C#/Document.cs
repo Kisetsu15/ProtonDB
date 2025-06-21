@@ -1,6 +1,4 @@
 ﻿using Kisetsu.Utils;
-using System;
-using System.Security.AccessControl;
 using System.Text;
 using System.Text.RegularExpressions;
 using static MicroDB.Parser;
@@ -48,38 +46,38 @@ namespace MicroDB {
                 return;
             }
 
-            string argument = query.Argument.Strip(' ');
+            string argument = query.Argument.Trim();
             if (!argument.Contains('{') || !argument.Contains('}')) {
-                Terminal.WriteLine("Invalid update format. param must be a JSON object like {\"key\": value}");
+                Terminal.WriteLine("Invalid update format. data must be a object like {\"key\": value}");
                 return;
             }
 
-            var match = Regex.Match(argument, @"^(?<action>\w+)\,\{(?<param>.+)\}\,(?<condition>.+)$");
+            var match = Regex.Match(argument, @"^(?<action>\w+)\,\{(?<data>.+)\}\,(?<condition>.+)$");
 
             string action;
-            string param;
+            string data;
 
             if (!match.Success) {
-                match = Regex.Match(argument, @"^(?<action>\w+)\,\{(?<param>.+)$\}");
+                match = Regex.Match(argument, @"^(?<action>\w+)\,\{(?<data>.+)\}$");
                 if (!match.Success) {
-                    Terminal.WriteLine("Invalid update format. Use: action,param,condition or action,param");
+                    Terminal.WriteLine("Invalid update format. Use: action,data,condition or action,data");
                     return;
                 }
                 action = match.Groups[Token.action].Value;
-                param = match.Groups[Token.param].Value;
+                data = match.Groups[Token.data].Value;
 
-                param = param.DropFormat(action);
+                data = (action == Token.drop) ? $"\"{data.Trim('"')}\"" : "{" + data + "}";
 
-                StorageEngine.UpdateAllDocuments(Master.CurrentDatabase, query.Object, GetAction(action), param);
+                StorageEngine.UpdateAllDocuments(Master.CurrentDatabase, query.Object, GetAction(action.Trim()), data);
                 return;
             }
 
 
             action = match.Groups[Token.action].Value;
-            param = match.Groups[Token.param].Value;
+            data = match.Groups[Token.data].Value;
             var condition = ConditionParser(match.Groups[Token.condition].Value);
 
-            param = param.DropFormat(action);
+            data = (action == Token.drop) ? data.Strip('"') : "{" + data + "}";
 
             if (condition == null) {
                 Terminal.WriteLine("Invalid condition format. Use: key<condition>value ");
@@ -87,16 +85,8 @@ namespace MicroDB {
             }
 
             StorageEngine.UpdateDocuments(Master.CurrentDatabase, query.Object, condition.Value.key, condition.Value.value, condition.Value.condition,
-                GetAction(action), param);
+                GetAction(action.Trim()), data);
 
-        }
-
-        private static string DropFormat(this string param, string action) {
-            if (action == Token.drop) {
-                param = param.Strip('{', '}', '"');
-                param = $"\"{param}\"";
-            }
-            return param;
         }
 
         private static string Strip(this string str, params char[] removeChars) {
@@ -111,6 +101,7 @@ namespace MicroDB {
         }
 
         private static (string key, string value, Condition condition)? ConditionParser(string argument) {
+            argument = argument.Strip(' ');
             var match = Regex.Match(argument, @"^(?<key>\w+)(?<condition>>=|<=|=|>|<)(?<value>.+)$");
 
             if (!match.Success)
@@ -126,7 +117,7 @@ namespace MicroDB {
             "add" => Action.add,
             "drop" => Action.drop,
             "alter" => Action.alter,
-            _ => throw new ArgumentException($"Invalid operation: {action}")
+            _ => throw new ArgumentException($"Invalid action: {action}")
         };
 
         private static Condition GetCondition(string op) => op switch {

@@ -4,24 +4,71 @@ namespace MicroDB {
 
     public static class Master {
 
-        public static string CurrentDatabase { get; private set; } = Token._database;
-        private static string DatabaseDirectory => Path.Combine(Directory.GetCurrentDirectory(), "db");
-        public static Dictionary<string, string> Databases { get; private set; } = Json.Load<string>(Path.Combine(DatabaseDirectory, ".database.meta"));
+        public const string defaultDatabase = Token.microDB;
+        public static string CurrentDatabase { get => currentDatabase ; set => currentDatabase = value; }
+        public static Dictionary<string, string> Databases { get; private set; } = Json.Load<string>(Path.Combine(DatabaseDirectory, Token.databaseMetaFile));
+        private static string DatabaseDirectory => Path.Combine(Directory.GetCurrentDirectory(), Token._database);
+        private static string currentDatabase = Token.microDB;
 
+        public static void Main() {
 
-        public static void Main(string[] args) {
-            if (!Directory.Exists(DatabaseDirectory)) {
-                Directory.CreateDirectory(DatabaseDirectory);
-                Database.Create(Token._database);
-            }
+            InitializeEnvironment();
             while (true) {
                 string input = Terminal.Input($"{CurrentDatabase}> ");
+                if (string.IsNullOrWhiteSpace(input)) continue;
+                if (input.Equals(Token._quit, StringComparison.OrdinalIgnoreCase)) {
+                    Terminal.WriteLine("Exiting MicroDB...");
+                    break;
+                }
+                if (input.Equals(Token._help, StringComparison.OrdinalIgnoreCase)) {
+                    ShowHelp();
+                    continue;
+                }
                 Parser.Execute(input);
             }
-
         }
 
-        public static void SetDatabase(string name) => CurrentDatabase = name;
+        private static void InitializeEnvironment() {
+            if (!Directory.Exists(DatabaseDirectory)) {
+                Directory.CreateDirectory(DatabaseDirectory);
+                Database.Create(Token.microDB);
+            }
+            Databases = Json.Load<string>(Path.Combine(DatabaseDirectory, ".database.meta"));
+        }
 
+        private static void ShowHelp() {
+
+            Terminal.WriteLine("\nDatabase Operations: db.<operation>(argument)");
+            Terminal.WriteLine("  use(name)                         Use a database");
+            Terminal.WriteLine("  create(name)                      Create a new database");
+            Terminal.WriteLine("  drop()                            Drop the current database");
+            Terminal.WriteLine("  drop(name)                        Drop a specified database");
+            Terminal.WriteLine("  list()                            List all databases");
+
+            Terminal.WriteLine("\nCollection Operations: collection.<operation>(argument)");         
+            Terminal.WriteLine("  create(name)                      Create a new collection");
+            Terminal.WriteLine("  drop(name)                        Drop a collection");
+            Terminal.WriteLine("  list()                            List all collections in the current database");
+
+            Terminal.WriteLine("\nDocument Operations: <collection_name>.<operation>(argument)");           
+            Terminal.WriteLine("  insert(data)                      Insert a document into collection");
+            Terminal.WriteLine("  remove()                          Remove all documents in a collection");
+            Terminal.WriteLine("  remove(condition)                 Remove documents matching the condition from collection");
+            Terminal.WriteLine("  print()                           Print all documents in collection");
+            Terminal.WriteLine("  print(condition)                  Print documents matching the condition from collection");
+            Terminal.WriteLine("  update(action, data)              Update all documents in collection");
+            Terminal.WriteLine("  update(action, data, condition)   Update documents matching the condition in collection");
+
+            Terminal.WriteLine("\n  action    - [ add | drop | alter ]");
+            Terminal.WriteLine("  data      -  {\"key\": value}");
+            Terminal.WriteLine("  condition - key <operator> value");
+            Terminal.WriteLine("  operators - [ < | <= | > | >= | = ]");
+            Terminal.WriteLine("*Note*: data is {\"key\"} for update(drop, data, condition)");
+
+            Terminal.WriteLine("\nCommands:");
+            Terminal.WriteLine("  microdb                        Open MicroDB");
+            Terminal.WriteLine("  :h                             Show this help message");
+            Terminal.WriteLine("  :q                             Exit MicroDB\n");
+        }
     }
 }
