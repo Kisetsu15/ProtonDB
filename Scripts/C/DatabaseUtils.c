@@ -340,7 +340,7 @@ int UpdateFilteredDocuments(cJSON *collection, const char *key, const char *valu
 bool AddAction(cJSON* item, const char* param) {
     cJSON* temp = cJSON_Parse(param);
     if (!temp || !cJSON_IsObject(temp)) {
-        fprintf(stderr, "Invalid add param: %s\n", param);
+        fprintf(stderr, "Invalid data format %s\n", param);
         if (temp) cJSON_Delete(temp);
         return false;
     }
@@ -359,7 +359,7 @@ bool AddAction(cJSON* item, const char* param) {
 bool DropAction(cJSON* item, const char* param) {
     cJSON* temp = cJSON_Parse(param);
     if (!temp || !cJSON_IsString(temp)) {
-        fprintf(stderr, "Invalid drop param: %s\n", param);
+        fprintf(stderr, "Invalid data format: %s\n", param);
         if (temp) cJSON_Delete(temp);
         return false;;
     }
@@ -373,7 +373,7 @@ bool DropAction(cJSON* item, const char* param) {
 bool AlterAction(cJSON* item, const char* param) {
     cJSON* temp = cJSON_Parse(param);
     if (!temp || !cJSON_IsObject(temp)) {
-        fprintf(stderr, "Invalid alter param: %s\n", param);
+        fprintf(stderr, "Invalid data format: %s\n", param);
         if (temp) cJSON_Delete(temp);
         return false;
     }
