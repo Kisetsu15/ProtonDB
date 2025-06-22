@@ -45,7 +45,7 @@ profiles.remove(name=Bob)                            # Conditional removal
 
 # Document Updates
 profiles.update(add, {"score": 100})                 # Add new field to all
-profiles.update(drop, {"score": null})               # Drop field from all
+profiles.update(drop, {"score"})                     # Drop field from all
 profiles.update(alter, {"name": "John"}, name=Tom)   # Alter conditionally
 ```
 
