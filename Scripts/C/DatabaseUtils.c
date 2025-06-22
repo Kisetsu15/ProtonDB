@@ -6,11 +6,13 @@
 #include "DatabaseUtils.h"
 #include "cJSON.h"
 
-char* pair = NULL;
+
 
 bool CheckDatabase(const char* databaseName) {
     bool exist = false;
-    cJSON* databaseMeta = LoadJson(DATABASE_META);
+    char metaPath[MAX_PATH_LEN];
+    GetDatabaseMeta(metaPath);
+    cJSON* databaseMeta = LoadJson(metaPath);
     if (cJSON_HasObjectItem(databaseMeta, databaseName)) exist = true;
 
     cJSON_Delete(databaseMeta);
@@ -430,16 +432,25 @@ bool IsRelated(const double value1, const double value2, const Condition conditi
 }
 
 
-void GetCollectionFile(char* array, const char* databaseName, const char* collectionName, const int size) {
-    snprintf(array, size, "%s/%s/%s.col", DATABASE, databaseName, collectionName);
+void GetCollectionFile(char* array, const char* databaseName, const char* collectionName) {
+    char* env = getenv("APPDATA");
+    snprintf(array, MAX_PATH_LEN, "%s/%s/%s/%s/%s.col", env, PROTON_DB, DATABASE, databaseName, collectionName);
 }
 
-void GetCollectionsMeta(char* array, const char* databaseName, const int size) {
-    snprintf(array, size, "%s/%s/%s", DATABASE, databaseName, COLLECTION_META);
+void GetCollectionsMeta(char* array, const char* databaseName) {
+    char* env = getenv("APPDATA");
+    snprintf(array, MAX_PATH_LEN, "%s/%s/%s/%s/%s",env, PROTON_DB, DATABASE, databaseName, COLLECTION_META);
 }
 
-void GetDatabaseDirectory(char* array, const char* databaseName, const int size) {
-    snprintf(array, size, "%s/%s", DATABASE, databaseName);
+void GetDatabaseMeta(char* array) {
+    char* env = getenv("APPDATA");
+    snprintf(array, MAX_PATH_LEN, "%s/%s/%s", env, PROTON_DB, DATABASE_META);
 }
+
+void GetDatabaseDirectory(char* array, const char* databaseName) {
+    char* env = getenv("APPDATA");
+    snprintf(array, MAX_PATH_LEN, "%s/%s/%s/%s",env, PROTON_DB, DATABASE, databaseName);
+}
+
 
 

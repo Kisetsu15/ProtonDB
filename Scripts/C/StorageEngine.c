@@ -4,8 +4,9 @@
 #include "StorageEngine.h"
 #include "DatabaseUtils.h"
 
-char path[128];
-char metaFile[128];
+char path[MAX_PATH_LEN];
+char metaFile[MAX_PATH_LEN];
+char databaseMeta[MAX_PATH_LEN];
 
 __declspec(dllexport) void CreateDatabase(const char* databaseName) {
     if (strlen(databaseName) + 4 >= sizeof(path)) {
@@ -18,9 +19,9 @@ __declspec(dllexport) void CreateDatabase(const char* databaseName) {
         return;
     }
 
-    GetDatabaseDirectory(path, databaseName, sizeof(path));
-
-    if (_mkdir(path) != 0 || !AppendEntry(DATABASE_META, databaseName, path, database)) {
+    GetDatabaseDirectory(path, databaseName);
+    GetDatabaseMeta(databaseMeta);
+    if (_mkdir(path) != 0 || !AppendEntry(databaseMeta, databaseName, path, database)) {
         perror("fatal: could not create database");
     } else {
         printf("Database '%s' created.\n", databaseName);
@@ -33,10 +34,11 @@ __declspec(dllexport) void DeleteDatabase(const char* databaseName) {
         return;
     }
 
-    GetDatabaseDirectory(path, databaseName, sizeof(path));
+    GetDatabaseDirectory(path, databaseName);
+    GetDatabaseMeta(databaseMeta);
     DeleteDirectoryContent(path);
 
-    if (_rmdir(path) != 0 || !RemoveEntry(DATABASE_META, databaseName, database)) {
+    if (_rmdir(path) != 0 || !RemoveEntry(databaseMeta, databaseName, database)) {
         perror("fatal: could not remove database");
     } else {
         printf("Database '%s' deleted.\n", databaseName);
@@ -44,14 +46,15 @@ __declspec(dllexport) void DeleteDatabase(const char* databaseName) {
 }
 
 __declspec(dllexport) void ListDatabase() {
-    cJSON* databaseMeta = LoadJson(DATABASE_META);
-    if (!databaseMeta || !cJSON_IsObject(databaseMeta)) {
+    GetDatabaseMeta(databaseMeta);
+    cJSON* databaseMetaConfig = LoadJson(databaseMeta);
+    if (!databaseMetaConfig || !cJSON_IsObject(databaseMetaConfig)) {
         fprintf(stderr, "fatal: Failed to load or parse database metadata.\n");
-        if (databaseMeta) cJSON_Delete(databaseMeta);
+        if (databaseMetaConfig) cJSON_Delete(databaseMetaConfig);
         return;
     }
 
-    cJSON* item = databaseMeta->child;
+    cJSON* item = databaseMetaConfig->child;
     if (!item) {
         printf("No Database found.\n");
     }
@@ -61,7 +64,7 @@ __declspec(dllexport) void ListDatabase() {
         item = item->next;
     }
 
-    cJSON_Delete(databaseMeta);
+    cJSON_Delete(databaseMetaConfig);
 }
 
 __declspec(dllexport) void CreateCollection(const char* databaseName, const char* collectionName) {
@@ -75,8 +78,8 @@ __declspec(dllexport) void CreateCollection(const char* databaseName, const char
         return;
     }
 
-    GetCollectionsMeta(metaFile, databaseName, sizeof(metaFile));
-    GetCollectionFile(path, databaseName, collectionName, sizeof(path));
+    GetCollectionsMeta(metaFile, databaseName);
+    GetCollectionFile(path, databaseName, collectionName);
 
     if (!AppendEntry(metaFile, collectionName, path, collection)) return;
 
@@ -95,9 +98,9 @@ __declspec(dllexport) void DeleteCollection(const char* databaseName, const char
         printf("fatal: Database '%s' doesn't exist.\n", databaseName);
         return;
     }
-    GetCollectionsMeta(metaFile, databaseName, sizeof(metaFile));
+    GetCollectionsMeta(metaFile, databaseName);
     if (RemoveEntry(metaFile, collectionName, collection)) {
-        GetCollectionFile(path, databaseName, collectionName, sizeof(path));
+        GetCollectionFile(path, databaseName, collectionName);
         remove(path);
         printf("Collection '%s' deleted.\n", collectionName);
     } else {
@@ -107,7 +110,7 @@ __declspec(dllexport) void DeleteCollection(const char* databaseName, const char
 }
 
 __declspec(dllexport) void ListCollection(const char* databaseName) {
-    GetCollectionsMeta(path, databaseName, sizeof(path));
+    GetCollectionsMeta(path, databaseName);
 
     cJSON* collectionMeta = LoadJson(path);
     if (!collectionMeta || !cJSON_IsObject(collectionMeta)) {
@@ -130,7 +133,7 @@ __declspec(dllexport) void ListCollection(const char* databaseName) {
 }
 
 __declspec(dllexport) void InsertDocument(const char* databaseName, const char* collectionName, const char* document) {
-    GetCollectionFile(path, databaseName, collectionName, sizeof(path));
+    GetCollectionFile(path, databaseName, collectionName);
     cJSON* root = LoadBinary(path);
     if (!root) {
         CreateCollection(databaseName, collectionName);
@@ -157,7 +160,7 @@ __declspec(dllexport) void PrintAllDocuments(const char* databaseName, const cha
 
 
 __declspec(dllexport) void PrintDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition) {
-    GetCollectionFile(path, databaseName, collectionName, sizeof(path));
+    GetCollectionFile(path, databaseName, collectionName);
     cJSON* collection = LoadBinary(path);
     if (!collection) {
         fprintf(stderr, "fatal: Collection file for '%s' not found or empty\n", databaseName);
@@ -173,7 +176,7 @@ __declspec(dllexport) void PrintDocuments(const char* databaseName, const char* 
 }
 
 __declspec(dllexport) void DeleteDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition) {
-    GetCollectionFile(path, databaseName, collectionName, sizeof(path));
+    GetCollectionFile(path, databaseName, collectionName);
     cJSON* collection = LoadBinary(path);
     if (!collection || !cJSON_IsArray(collection)) {
         fprintf(stderr, "fatal: Collection file for '%s' not found or empty\n", databaseName);
@@ -200,7 +203,7 @@ __declspec(dllexport) void DeleteAllDocuments(const char* databaseName, const ch
 }
 
 __declspec(dllexport) void UpdateDocuments(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, const Action action, const char* data) {
-    GetCollectionFile(path, databaseName, collectionName, sizeof(path));
+    GetCollectionFile(path, databaseName, collectionName);
     cJSON* collection = LoadBinary(path);
     if (!collection || !cJSON_IsArray(collection)) {
         fprintf(stderr, "fatal: Collection file for '%s' not found or empty\n", databaseName);

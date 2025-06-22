@@ -1,9 +1,8 @@
 #ifndef DATABASE_UTILS_H
 #define DATABASE_UTILS_H
 
-#define MAX_DATABASES 100
-#define MAX_DB_NAME 64
-#define MAX_DB_PATH 128
+#define MAX_PATH_LEN 512
+#define PROTON_DB "ProtonDB"
 #define DATABASE "db"
 #define DATABASE_META "db/.database.meta"
 #define COLLECTION_META ".collection.meta"
@@ -55,8 +54,9 @@ const char* FileTypeString(FileType fileType);
 cJSON* LoadJson(const char* file_name);
 bool SaveJson(const char* filename, cJSON* config);
 
-void GetCollectionFile(char* array, const char* databaseName, const char* collectionName, int size);
-void GetCollectionsMeta(char* array, const char* databaseName, int size);
-void GetDatabaseDirectory(char* array, const char* databaseName, int size);
+void GetCollectionFile(char* array, const char* databaseName, const char* collectionName);
+void GetCollectionsMeta(char* array, const char* databaseName);
+void GetDatabaseDirectory(char* array, const char* databaseName);
+void GetDatabaseMeta(char* array);
 
 #endif //DATABASE_UTILS_H

@@ -1,17 +1,21 @@
 using Kisetsu.Utils;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace ProtonDB {
     public static class ProtonMeta {
+        private const string PROTON_DB = "ProtonDB";
+        private static string DatabaseMetaFile => Path.Combine(DatabaseDirectory, Token.databaseMetaFile);
+        private static string currentDatabase = Token.protonDB;
+
         public const string defaultDatabase = Token.protonDB;
         public static string CurrentDatabase { get => currentDatabase; set => currentDatabase = value; }
-        public static string DatabaseDirectory => Path.Combine(Directory.GetCurrentDirectory(), Token._database);
+        public static string DatabaseDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), PROTON_DB, Token._database);
         public static Dictionary<string, string> GetDatabaseList() => (!File.Exists(DatabaseMetaFile)) ?
             [] : Json.Load<string>(Path.Combine(DatabaseDirectory, Token.databaseMetaFile));
 
-        public static void Version() => Terminal.WriteLine($"ProtonDB v{Assembly.GetExecutingAssembly().GetName().Version}");
-        private static string DatabaseMetaFile => Path.Combine(DatabaseDirectory, Token.databaseMetaFile);
-        private static string currentDatabase = Token.protonDB;
+        public static void Version() => Terminal.WriteLine($"{PROTON_DB} v{Assembly.GetExecutingAssembly().GetName().Version}");
         public static void Help() {
 
             Terminal.WriteLine("\nDatabase Operations: db.<operation>(argument)");
@@ -46,6 +50,10 @@ namespace ProtonDB {
             Terminal.WriteLine("  :h                             Show this help message");
             Terminal.WriteLine("  :v                             Show ProtonDB version");
             Terminal.WriteLine("  :q                             Exit ProtonDB\n");
+        }
+
+        static void Log(string message) {
+            Terminal.WriteLine(message, ConsoleColor.Cyan);
         }
     }
 }
