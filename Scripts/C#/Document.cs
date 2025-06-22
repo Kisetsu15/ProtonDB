@@ -69,6 +69,7 @@ namespace ProtonDB {
 
         private enum State {
             Action,
+            Token,
             Data,
             Condition
         };
@@ -84,7 +85,17 @@ namespace ProtonDB {
                             state = State.Data;
                         } else if (i == ' ') {
                             continue;
+                        } else if (i != ' ') {
+                            action.Append(i);
+                            state = State.Token;
                         } else {
+                            action.Append(i);
+                        }
+                        break;
+                    case State.Token:
+                        if (i == ',') {
+                            state = State.Data;
+                        } else { 
                             action.Append(i);
                         }
                         break;
@@ -112,10 +123,15 @@ namespace ProtonDB {
                         break;
                 }
             }
+            Terminal.WriteLine($"Action: {action}, Data: {data}, Condition: {condition}");
+            Action actionInstance = GetAction(action.ToString().Trim());
+            if (actionInstance == Action.invalid) {
+                Terminal.WriteLine("Invalid action. Use: add, drop, alter");
+                return null;
+            }
+            if (state == State.Condition && brackets.Count == 0) return (actionInstance, data.ToString(), condition.ToString());
 
-            if (state == State.Condition && brackets.Count == 0) return (GetAction(action.ToString()), data.ToString(), condition.ToString());
-
-            if (state == State.Data && brackets.Count == 0) return (GetAction(action.ToString()), data.ToString(), null);
+            if (state == State.Data && brackets.Count == 0) return (actionInstance, data.ToString(), null);
 
             Terminal.WriteLine("Invalid update format. Use: action,data,condition or action,data");
             return null;
@@ -131,6 +147,10 @@ namespace ProtonDB {
             var key = match.Groups["key"].Value;
             var value = match.Groups["value"].Value.Trim('"');
             var condition = GetCondition(match.Groups["condition"].Value);
+            if (condition == Condition.invalid) {
+                Terminal.WriteLine("Invalid condition operator. Use: <, <=, =, >, >=");
+                return null;
+            }
             return (key, value, condition);
         }
 
@@ -138,7 +158,7 @@ namespace ProtonDB {
             "add" => Action.add,
             "drop" => Action.drop,
             "alter" => Action.alter,
-            _ => throw new ArgumentException($"Invalid action: {action}")
+            _ => Action.invalid
         };
 
         private static Condition GetCondition(string op) => op switch {
@@ -147,7 +167,7 @@ namespace ProtonDB {
             "<" => Condition.lessThan,
             ">=" => Condition.greaterThanEqual,
             "<=" => Condition.lessThanEqual,
-            _ => throw new ArgumentException($"Invalid condition operator: {op}")
+            _ => Condition.invalid,
         };
 
     }

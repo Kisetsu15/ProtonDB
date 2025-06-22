@@ -134,6 +134,7 @@ __declspec(dllexport) void ListCollection(const char* databaseName) {
 
 __declspec(dllexport) void InsertDocument(const char* databaseName, const char* collectionName, const char* document) {
     GetCollectionFile(path, databaseName, collectionName);
+
     cJSON* root = LoadBinary(path);
     if (!root) {
         CreateCollection(databaseName, collectionName);
@@ -141,18 +142,40 @@ __declspec(dllexport) void InsertDocument(const char* databaseName, const char* 
     }
 
     cJSON* parsedDocument = cJSON_Parse(document);
-    if (!parsedDocument || !cJSON_IsObject(parsedDocument)) {
-        fprintf(stderr, "fatal: Invalid document format.\n");
-        cJSON_Delete(parsedDocument);
+    if (!parsedDocument) {
+        fprintf(stderr, "fatal: Failed to parse document.\n");
         cJSON_Delete(root);
         return;
     }
-    cJSON_AddItemToArray(root, parsedDocument);
-    DumpBinary(path, root);
-    cJSON_Delete(root);
 
-    printf("Inserted\n");
+    int insertedCount = 0;
+
+    if (cJSON_IsArray(parsedDocument)) {
+        cJSON* item = NULL;
+        cJSON_ArrayForEach(item, parsedDocument) {
+            cJSON* copy = cJSON_Duplicate(item, 1);
+            if (copy) {
+                cJSON_AddItemToArray(root, copy);
+                insertedCount++;
+            }
+        }
+    } else if (cJSON_IsObject(parsedDocument)) {
+        cJSON* copy = cJSON_Duplicate(parsedDocument, 1);
+        if (copy) {
+            cJSON_AddItemToArray(root, copy);
+            insertedCount++;
+        }
+    } else {
+        fprintf(stderr, "fatal: Document must be a JSON object or array of objects.\n");
+    }
+
+    DumpBinary(path, root);
+    printf("Inserted %d\n", insertedCount);
+
+    cJSON_Delete(parsedDocument);
+    cJSON_Delete(root);
 }
+
 
 __declspec(dllexport) void PrintAllDocuments(const char* databaseName, const char* collectionName) {
     PrintDocuments(databaseName, collectionName, NULL, NULL, all);

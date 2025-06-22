@@ -215,6 +215,7 @@ void PrintFilteredDocuments(const cJSON* collection, const char* key, const char
     }
 
     const cJSON* item = NULL;
+    if (cJSON_GetArraySize(collection) == 0) printf("[]");
     cJSON_ArrayForEach(item, collection) {
         if (condition == all || key == NULL || value == NULL) {
             PrintItem(item);

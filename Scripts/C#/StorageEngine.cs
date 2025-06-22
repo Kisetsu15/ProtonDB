@@ -9,12 +9,14 @@ namespace ProtonDB {
         lessThanEqual,
         equal,
         all,
+        invalid,
     };
 
     public enum Action {
         add,
         drop,
-        alter
+        alter,
+        invalid,
     };
 
     public static class StorageEngine {
