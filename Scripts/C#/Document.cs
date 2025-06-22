@@ -10,12 +10,12 @@ namespace ProtonDB {
                 Terminal.WriteLine("Insert requires a document argument");
                 return;
             }
-            StorageEngine.InsertDocument(Master.CurrentDatabase, query.Object, query.Argument);
+            StorageEngine.InsertDocument(ProtonMeta.CurrentDatabase, query.Object, query.Argument);
         }
 
         public static void Remove(Query query) {
             if (query.Argument == null) {
-                StorageEngine.DeleteAllDocuments(Master.CurrentDatabase, query.Object);
+                StorageEngine.DeleteAllDocuments(ProtonMeta.CurrentDatabase, query.Object);
                 return;
             }
             var condition = ConditionParser(query.Argument);
@@ -23,12 +23,12 @@ namespace ProtonDB {
                 Terminal.WriteLine("Invalid condition format. Use: key<condition>value ");
                 return;
             }
-            StorageEngine.DeleteDocuments(Master.CurrentDatabase, query.Object, condition.Value.key, condition.Value.value, condition.Value.condition);
+            StorageEngine.DeleteDocuments(ProtonMeta.CurrentDatabase, query.Object, condition.Value.key, condition.Value.value, condition.Value.condition);
         }
 
         public static void Print(Query query) {
             if (query.Argument == null) {
-                StorageEngine.PrintAllDocuments(Master.CurrentDatabase, query.Object);
+                StorageEngine.PrintAllDocuments(ProtonMeta.CurrentDatabase, query.Object);
                 return;
             }
 
@@ -37,12 +37,12 @@ namespace ProtonDB {
                 Terminal.WriteLine("Invalid condition format. Use: key<condition>value ");
                 return;
             }
-            StorageEngine.PrintDocuments(Master.CurrentDatabase, query.Object, condition.Value.key, condition.Value.value, condition.Value.condition);
+            StorageEngine.PrintDocuments(ProtonMeta.CurrentDatabase, query.Object, condition.Value.key, condition.Value.value, condition.Value.condition);
         }
             
         public static void Update(Query query) {
             if (query.Argument == null) {
-                Terminal.WriteLine("Update requires a condition argument");
+                Terminal.WriteLine("Update requires a document argument");
                 return;
             }
             string argument = query.Argument;
@@ -56,7 +56,7 @@ namespace ProtonDB {
             Action action = component.Value.action;
             string data = component.Value.data;
             if (component.Value.condition == null) {
-                StorageEngine.UpdateAllDocuments(Master.CurrentDatabase, query.Object, action, data);
+                StorageEngine.UpdateAllDocuments(ProtonMeta.CurrentDatabase, query.Object, action, data);
                 return;
             }
             var condition = ConditionParser(component.Value.condition);
@@ -64,7 +64,7 @@ namespace ProtonDB {
                 Terminal.WriteLine("Invalid condition format. Use: key<condition>value ");
                 return;
             }
-            StorageEngine.UpdateDocuments(Master.CurrentDatabase, query.Object, condition.Value.key, condition.Value.value, condition.Value.condition, action, data);
+            StorageEngine.UpdateDocuments(ProtonMeta.CurrentDatabase, query.Object, condition.Value.key, condition.Value.value, condition.Value.condition, action, data);
         }
 
         private enum State {

@@ -8,27 +8,27 @@ namespace ProtonDB {
                 return;
             }
 
-            if (name == Master.CurrentDatabase) {
+            if (name == ProtonMeta.CurrentDatabase) {
                 Terminal.WriteLine($"Already using database: {name}");
                 return;
             }
 
-            Master.CurrentDatabase = name;
-            if (!Master.Databases.ContainsKey(name)) StorageEngine.CreateDatabase(name);
+            ProtonMeta.CurrentDatabase = name;
+            if (!ProtonMeta.GetDatabaseList().ContainsKey(name)) StorageEngine.CreateDatabase(name);
             Terminal.WriteLine($"Switched to database: {name}");
         }
 
         public static void Create(string name) => StorageEngine.CreateDatabase(name);
 
         public static void Drop(string name) {
-            if (name == null && name == Master.defaultDatabase) {
+            if ((name == null && ProtonMeta.CurrentDatabase == ProtonMeta.defaultDatabase) || name == ProtonMeta.defaultDatabase) {
                 Terminal.WriteLine("fatal: Cannot drop the default database");
                 return;
             }
 
-            if (name == null || name == Master.CurrentDatabase) {
-                StorageEngine.DeleteDatabase(Master.CurrentDatabase);
-                Master.CurrentDatabase = Master.defaultDatabase;
+            if (name == null || name == ProtonMeta.CurrentDatabase) {
+                StorageEngine.DeleteDatabase(ProtonMeta.CurrentDatabase);
+                ProtonMeta.CurrentDatabase = ProtonMeta.defaultDatabase;
                 return;
             }
 
