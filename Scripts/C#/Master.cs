@@ -5,8 +5,7 @@ namespace ProtonDB {
     public static class Master {
 
         public static void Main() {
-
-            InitializeEnvironment();
+            ProtonMeta.Initialize();
             while (true) {
                 string input = Terminal.Input($"{ProtonMeta.CurrentDatabase}> ");
                 if (string.IsNullOrWhiteSpace(input)) continue;
@@ -25,14 +24,5 @@ namespace ProtonDB {
                 Parser.Execute(input);
             }
         }
-
-        private static void InitializeEnvironment() {
-            if (!Directory.Exists(ProtonMeta.DatabaseDirectory)) {
-                Directory.CreateDirectory(ProtonMeta.DatabaseDirectory);
-                Database.Create(Token.protonDB);
-            }
-        }
-
-        
     }
 }
