@@ -10,7 +10,8 @@ namespace ProtonDB {
     }
 
     public static class Master {
-
+        private const int MAX_LENGTH = 4096;
+        private const int MAX_ARGUMENT = 1;
         private static readonly Dictionary<string, Func<Operation>> CommandMap = new(StringComparer.OrdinalIgnoreCase) {
             [Token._quit]    = () => { Terminal.WriteLine("Exiting ProtonDB..."); return Operation.End; },
             [Token.quit]     = () => { Terminal.WriteLine("Exiting ProtonDB..."); return Operation.End; },
@@ -23,12 +24,12 @@ namespace ProtonDB {
         public static void Main(string[] args) {
             ProtonMeta.Initialize();
 
-            if (args.Length > 1) {
+            if (args.Length > MAX_ARGUMENT) {
                 Terminal.WriteLine("ProtonDB takes only one argument. Usage: ProtonDB <command>");
                 return;
             }
 
-            if (args.Length == 1) {
+            if (args.Length == MAX_ARGUMENT) {
                 var cmdResult = CommandExecutor(args[0]);
                 if (cmdResult == Operation.End || cmdResult == Operation.Skip) return;
                 if (cmdResult == Operation.Noop) Terminal.WriteLine("Invalid command. Use: '--help'.");
@@ -60,9 +61,9 @@ namespace ProtonDB {
             var sb = new StringBuilder();
             input = input.Trim();
             sb.Append(input);
-
+            
             while (true) {
-                if (sb.Length > 4096) {
+                if (sb.Length > MAX_LENGTH) {
                     Console.WriteLine("MultiLineParser too long.");
                     return string.Empty;
                 }

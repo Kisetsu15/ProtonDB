@@ -123,7 +123,7 @@ namespace ProtonDB {
                         break;
                 }
             }
-            Terminal.WriteLine($"Action: {action}, Data: {data}, Condition: {condition}");
+
             Action actionInstance = GetAction(action.ToString().Trim());
             if (actionInstance == Action.invalid) {
                 Terminal.WriteLine("Invalid action. Use: add, drop, alter");
