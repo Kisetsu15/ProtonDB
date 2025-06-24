@@ -7,24 +7,26 @@
 char path[MAX_PATH_LEN];
 char metaFile[MAX_PATH_LEN];
 char databaseMeta[MAX_PATH_LEN];
+char message[MAX_MESSAGE_LEN];
 
-__declspec(dllexport) void CreateDatabase(const char* databaseName) {
+__declspec(dllexport) const char* CreateDatabase(const char* databaseName) {
+
     if (strlen(databaseName) + 4 >= sizeof(path)) {
-        printf("warning: Database name too long.\n");
-        return;
+        return "warning: Database name too long";
     }
 
     if (CheckDatabase(databaseName)) {
-        printf("warning: Database '%s' already exists.\n", databaseName);
-        return;
+        GetMessage(message,"warning: Database '%s' already exists.\n",databaseName);
+        return message;
     }
 
     GetDatabaseDirectory(path, databaseName);
     GetDatabaseMeta(databaseMeta);
     if (_mkdir(path) != 0 || !AppendEntry(databaseMeta, databaseName, path, database)) {
-        perror("fatal: could not create database");
+        return "fatal: could not create database";
     } else {
-        printf("Database '%s' created.\n", databaseName);
+        GetMessage(message, "Database '%s' created.\n", databaseName);
+        return message;
     }
 }
 

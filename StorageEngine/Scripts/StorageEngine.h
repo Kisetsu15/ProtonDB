@@ -3,7 +3,7 @@
 
 #include "DatabaseUtils.h"
 
-__declspec(dllexport) void CreateDatabase(const char* databaseName);
+__declspec(dllexport) const char* CreateDatabase(const char* databaseName);
 __declspec(dllexport) void DeleteDatabase(const char* databaseName);
 __declspec(dllexport) void ListDatabase();
 __declspec(dllexport) void CreateCollection(const char* databaseName, const char* collectionName);

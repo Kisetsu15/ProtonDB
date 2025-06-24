@@ -41,6 +41,8 @@ namespace ProtonDB.CLI {
 
         }
 
+        public static void Quit() => Terminal.WriteLine("Exiting ProtonDB...");
+
         public static void Clear() => Console.Clear();
     }
 }

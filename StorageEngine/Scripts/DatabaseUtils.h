@@ -2,6 +2,7 @@
 #define DATABASE_UTILS_H
 
 #define MAX_PATH_LEN 512
+#define MAX_MESSAGE_LEN 256
 #define PROTON_DB "ProtonDB"
 #define DATABASE "db"
 #define DATABASE_META "db/.database.meta"
@@ -58,5 +59,6 @@ void GetCollectionFile(char* array, const char* databaseName, const char* collec
 void GetCollectionsMeta(char* array, const char* databaseName);
 void GetDatabaseDirectory(char* array, const char* databaseName);
 void GetDatabaseMeta(char* array);
+void GetMessage(char* array, const char* message, const char* object);
 
 #endif //DATABASE_UTILS_H

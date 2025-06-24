@@ -453,5 +453,9 @@ void GetDatabaseDirectory(char* array, const char* databaseName) {
     snprintf(array, MAX_PATH_LEN, "%s/%s/%s/%s",env, PROTON_DB, DATABASE, databaseName);
 }
 
+void GetMessage(char* array, const char* message, const char* object) {
+    snprintf(array, MAX_MESSAGE_LEN, message, object);
+}
+
 
 
