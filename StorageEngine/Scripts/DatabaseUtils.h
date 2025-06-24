@@ -2,7 +2,8 @@
 #define DATABASE_UTILS_H
 
 #define MAX_PATH_LEN 512
-#define MAX_MESSAGE_LEN 256
+#define MAX_MESSAGE_LEN 384
+#define MAX_ERROR_LEN 256
 #define PROTON_DB "ProtonDB"
 #define DATABASE "db"
 #define DATABASE_META "db/.database.meta"
@@ -31,34 +32,33 @@ typedef enum {
     alter
 } Action;
 
+bool check_database(const char* databaseName);
+void delete_dir_content(const char* directory);
+int load_list(const char* metaFile, char*** list);
+bool dump_binary(const char* fileName, const cJSON* data, char* error);
+cJSON* load_binary(const char* fileName, char* error);
 
-bool CheckDatabase(const char* databaseName);
-void DeleteDirectoryContent(const char* directory);
+void print_item(char** document, int index, const cJSON* item);
+int print_filtered_documents(cJSON* collection, const char* key, const char* value, Condition condition, char*** list, char* error);
+int remove_filtered_documents(cJSON* collection, const char* key, const char* value, Condition condition, char* error);
+int update_filtered_documents(cJSON *collection, const char *key, const char *value, Condition condition, Action action, const char *data, char* error);
+bool is_related(double value1, double value2, Condition condition);
 
-bool DumpBinary(const char* fileName, const cJSON* data);
-cJSON* LoadBinary(const char* fileName);
+bool add_action(cJSON* item, const char* data, char* error);
+bool drop_action(cJSON* item, const char* data, char* error);
+bool alter_action(cJSON* item, const char* data, char* error);
 
-void PrintItem(const cJSON* item);
-void PrintFilteredDocuments(const cJSON* collection, const char* key, const char* value, Condition condition);
-int DeleteFilteredDocuments(cJSON* collection, const char* key, const char* value, Condition condition);
-int UpdateFilteredDocuments(cJSON *collection, const char *key, const char *value, const Condition condition, const Action action, const char *data);
-bool IsRelated(double value1, double value2, Condition condition);
+bool append_entry(const char* metaFile, const char* name, const char* path, FileType fileType, char* error);
+bool remove_entry(const char* metaFile, const char* name, FileType fileType, char* error);
+const char* file_type_string(FileType fileType);
 
-bool AddAction(cJSON* item, const char* param);
-bool DropAction(cJSON* item, const char* param);
-bool AlterAction(cJSON* item, const char* param);
+cJSON* load_json(const char* file_name);
+bool save_json(const char* filename, cJSON* config, char* error);
 
-bool AppendEntry(const char* metaFile, const char* name, const char* path, FileType fileType);
-bool RemoveEntry(const char* metaFile, const char* name, FileType fileType);
-const char* FileTypeString(FileType fileType);
-
-cJSON* LoadJson(const char* file_name);
-bool SaveJson(const char* filename, cJSON* config);
-
-void GetCollectionFile(char* array, const char* databaseName, const char* collectionName);
-void GetCollectionsMeta(char* array, const char* databaseName);
-void GetDatabaseDirectory(char* array, const char* databaseName);
-void GetDatabaseMeta(char* array);
-void GetMessage(char* array, const char* message, const char* object);
+void get_col_file(char* array, const char* databaseName, const char* collectionName);
+void get_col_meta(char* array, const char* databaseName);
+void get_database_dir(char* array, const char* databaseName);
+void get_database_meta(char* array);
+void get_message(char* array, const char* message, const char* object);
 
 #endif //DATABASE_UTILS_H

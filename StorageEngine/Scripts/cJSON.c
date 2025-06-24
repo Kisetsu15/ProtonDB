@@ -1980,6 +1980,15 @@ CJSON_PUBLIC(cJSON_bool) cJSON_HasObjectItem(const cJSON *object, const char *st
     return cJSON_GetObjectItem(object, string) ? 1 : 0;
 }
 
+CJSON_PUBLIC(cJSON_bool) cJSON_HasArrayItem(const cJSON* array, const char* string) {
+    const cJSON* item = NULL;
+    cJSON_ArrayForEach(item, array) {
+        const cJSON* itemObject = cJSON_GetObjectItem(item, string);
+        if (itemObject != NULL) return true;
+    }
+    return false;
+}
+
 /* Utility for array list handling. */
 static void suffix_object(cJSON *prev, cJSON *item)
 {
