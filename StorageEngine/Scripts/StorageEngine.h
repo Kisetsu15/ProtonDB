@@ -3,19 +3,23 @@
 
 #include "DatabaseUtils.h"
 
-__declspec(dllexport) const char* create_database(const char* databaseName);
-__declspec(dllexport) const char* drop_database(const char* databaseName);
-__declspec(dllexport) const char** list_database(int* count);
-__declspec(dllexport) const char* create_collection(const char* databaseName, const char* collectionName);
-__declspec(dllexport) const char* drop_collection(const char* databaseName, const char* collectionName);
-__declspec(dllexport) const char** list_collection(const char* databaseName, int* count);
-__declspec(dllexport) const char* insert_document(const char* databaseName, const char* collectionName, const char* document);
-__declspec(dllexport) const char* remove_all_documents(const char* databaseName, const char* collectionName);
-__declspec(dllexport) const char* remove_documents(const char* databaseName, const char* collectionName, const char* key, const char* value, Condition condition);
-__declspec(dllexport) const char** print_all_documents(const char* databaseName, const char* collectionName, char* message, int* count);
-__declspec(dllexport) const char** print_documents(const char* databaseName, const char* collectionName, const char* key, const char* value, Condition condition, char* message, int* count);
-__declspec(dllexport) const char* update_all_documents(const char* databaseName, const char* collectionName, Action action, const char* data);
-__declspec(dllexport) const char* update_documents(const char* databaseName, const char* collectionName, const char* key, const char* value, Condition condition, Action action, const char* data);
-__declspec(dllexport) void free_list(char** list);
-__declspec(dllexport) void free_count(int* count);
+#define EXPORT __declspec(dllexport)
+
+EXPORT Output create_database(QueryConfig config);
+EXPORT Output drop_database(QueryConfig config);
+EXPORT ArrayOut list_database();
+
+EXPORT Output create_collection(QueryConfig config);
+EXPORT Output drop_collection(QueryConfig config);
+EXPORT ArrayOut list_collection(QueryConfig config);
+
+EXPORT Output insert_document(QueryConfig config);
+EXPORT Output remove_all_documents(QueryConfig config);
+EXPORT Output remove_documents(QueryConfig config);
+EXPORT ArrayOut print_all_documents(QueryConfig config);
+EXPORT ArrayOut print_documents(QueryConfig config);
+EXPORT Output update_all_documents(QueryConfig config);
+EXPORT Output update_documents(QueryConfig config);
+
+EXPORT void free_list(char** list, int size);
 #endif //STORAGE_ENGINE_H
