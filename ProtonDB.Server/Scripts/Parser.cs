@@ -1,61 +1,62 @@
 ﻿using System.Text.RegularExpressions;
 
 namespace ProtonDB.Server {
+    namespace Core {
+        public static class Parser {
+            public record Query(string Object, string Operation, string? Argument);
 
-    public static class Parser {
-        public record Query(string Object, string Operation, string? Argument);
+            public static string[] Execute(string input) {
+                var query = Parse(input);
+                if (query == null) {
+                    return ["Invalid input"];
+                }
 
-        public static string[] Execute(string input) {
-            var query = Parse(input);
-            if (query == null) {
-                return ["Invalid input"];
+                return query.Object switch {
+                    Token._database => ExecuteDatabaseCommand(query),
+                    Token.collection => ExecuteCollectionCommand(query),
+                    _ => ExecuteDocumentCommand(query)
+                };
             }
 
-            return query.Object switch {
-                Token._database => ExecuteDatabaseCommand(query),
-                Token.collection => ExecuteCollectionCommand(query),
-                _ => ExecuteDocumentCommand(query)
-            };
-        }
+            private static Query? Parse(string input) {
+                var match = Regex.Match(input, pattern: @"^(?<object>\w+)\.(?<operation>\w+)\((?<argument>.*)\)$");
+                if (!match.Success) return null;
 
-        private static Query? Parse(string input) {
-            var match = Regex.Match(input, pattern: @"^(?<object>\w+)\.(?<operation>\w+)\((?<argument>.*)\)$");
-            if (!match.Success) return null;
+                return new Query(
+                    match.Groups[Token.@object].Value,
+                    match.Groups[Token.operation].Value,
+                    string.IsNullOrWhiteSpace(match.Groups[Token.argument].Value) ? null : match.Groups[Token.argument].Value.Trim('"')
+                );
+            }
 
-            return new Query(
-                match.Groups[Token.@object].Value,
-                match.Groups[Token.operation].Value,
-                string.IsNullOrWhiteSpace(match.Groups[Token.argument].Value) ? null : match.Groups[Token.argument].Value.Trim('"')
-            );
-        }
+            private static string[] ExecuteDatabaseCommand(Query query) {
 
-        private static string[] ExecuteDatabaseCommand(Query query) {
+                return query.Object switch {
+                    Token.use => Database.Use(query.Argument!),
+                    Token.create => Database.Create(query.Argument!),
+                    Token.drop => Database.Drop(query.Argument!),
+                    Token.list => Database.List(),
+                    _ => ["Invalid database command"]
+                };
+            }
 
-            return query.Object switch {
-                Token.use => Database.Use(query.Argument!),
-                Token.create => Database.Create(query.Argument!),
-                Token.drop => Database.Drop(query.Argument!),
-                Token.list => Database.List(),
-                _ => ["Invalid database command"]
-            };
-        }
-
-        private static string[] ExecuteCollectionCommand(Query query) {
-            return query.Object switch {
-                Token.create => Collection.Create(query.Argument!),
-                Token.drop => Collection.Drop(query.Argument!),
-                Token.list => Collection.List(query.Argument!),
-                _ => ["Invalid collection command"]
-            };
-        }
-        private static string[] ExecuteDocumentCommand(Query query) {
-            return query.Object switch {
-                Token.insert => Document.Insert(query),
-                Token.remove => Document.Remove(query),
-                Token.update => Document.Update(query),
-                Token.print  => Document.Print(query),
-                _ => ["Invalid document command"]
-            };
+            private static string[] ExecuteCollectionCommand(Query query) {
+                return query.Object switch {
+                    Token.create => Collection.Create(query.Argument!),
+                    Token.drop => Collection.Drop(query.Argument!),
+                    Token.list => Collection.List(query.Argument!),
+                    _ => ["Invalid collection command"]
+                };
+            }
+            private static string[] ExecuteDocumentCommand(Query query) {
+                return query.Object switch {
+                    Token.insert => Document.Insert(query),
+                    Token.remove => Document.Remove(query),
+                    Token.update => Document.Update(query),
+                    Token.print => Document.Print(query),
+                    _ => ["Invalid document command"]
+                };
+            }
         }
     }
 }
