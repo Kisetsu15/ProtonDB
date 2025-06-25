@@ -1,68 +1,10 @@
-using Kisetsu.Utils;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using ProtonDB.Server.Core;
 using System.Text.Json;
 
 namespace ProtonDB.Server {
-    public static class ProtonServer {
-        public static async Task Main(string[] args) {
-            
-            var config = ConfigLoader.Load();
-            var server = new QueryServer(config.Port);
-            await server.StartAsync();
-        }
-    }
-
-    public class QuerySession {
-        public string? LastQuery { get; set; }
-        public string[]? Result { get; set; }
-        public bool Debug { get; set; } = false;
-        public bool ShouldExit { get; set; } = false;
-    }
-
-
-    public class Request {
-        public string? Command { get; set; }
-        public string? Data { get; set; }
-    }
-
-    public class Response {
-        public string Status { get; set; } = "ok";
-        public string Message { get; set; } = "";
-        public string[]? Result { get; set; }
-    }
-
-    public class ServerConfig {
-        public string Host { get; set; } = "127.0.0.1";
-        public int Port { get; set; } = 9090;
-        public bool Debug { get; set; } = false;
-        public int MaxConnections { get; set; } = 100;
-    }
-
-    public static class ConfigLoader {
-        static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions {
-            WriteIndented = true
-        };
-
-        public static ServerConfig Load(string filePath = "config.json") {
-            if (!File.Exists(filePath)) {
-                var defaultConfig = new ServerConfig();
-                var options = _jsonOptions;
-                File.WriteAllText(filePath, JsonSerializer.Serialize(defaultConfig, options));
-                Console.WriteLine("Config file not found. Generated default config.");
-                return defaultConfig;
-            }
-
-            var json = File.ReadAllText(filePath);
-            return JsonSerializer.Deserialize<ServerConfig>(json)!;
-        }
-    }
-
-
-
     public class QueryServer {
         private readonly int _port;
         private readonly TcpListener _listener;

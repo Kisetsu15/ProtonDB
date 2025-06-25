@@ -6,7 +6,7 @@ namespace ProtonDB.Server {
             { "DEBUG OFF", () => new DebugCommand(false) },
             { "FETCH", () => new FetchCommand() },
             { "QUERY", () => new QueryCommand() },
-            { "EXIT", () => new ExitCommand() }
+            { "QUIT", () => new QuitCommand() }
         };
 
         public static IServerCommand? Resolve(string input) {

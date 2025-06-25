@@ -30,8 +30,7 @@ namespace ProtonDB.Server {
             }
 
             private static string[] ExecuteDatabaseCommand(Query query) {
-
-                return query.Object switch {
+                return query.Operation switch {
                     Token.use => Database.Use(query.Argument!),
                     Token.create => Database.Create(query.Argument!),
                     Token.drop => Database.Drop(query.Argument!),
@@ -41,7 +40,7 @@ namespace ProtonDB.Server {
             }
 
             private static string[] ExecuteCollectionCommand(Query query) {
-                return query.Object switch {
+                return query.Operation switch {
                     Token.create => Collection.Create(query.Argument!),
                     Token.drop => Collection.Drop(query.Argument!),
                     Token.list => Collection.List(query.Argument!),
@@ -49,7 +48,7 @@ namespace ProtonDB.Server {
                 };
             }
             private static string[] ExecuteDocumentCommand(Query query) {
-                return query.Object switch {
+                return query.Operation switch {
                     Token.insert => Document.Insert(query),
                     Token.remove => Document.Remove(query),
                     Token.update => Document.Update(query),

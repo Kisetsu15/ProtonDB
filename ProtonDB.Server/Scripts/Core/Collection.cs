@@ -1,6 +1,5 @@
 ﻿namespace ProtonDB.Server {
     namespace Core {
-
         public static class Collection {
             public static string[] Create(string name) => Linker(name, StorageEngine.create_collection);
 

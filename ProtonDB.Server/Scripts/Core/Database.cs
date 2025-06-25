@@ -1,8 +1,4 @@
-﻿using Kisetsu.Utils;
-using System;
-using System.Xml.Linq;
-
-namespace ProtonDB.Server {
+﻿namespace ProtonDB.Server {
     namespace Core {
         public static class Database {
             public static string[] Use(string name) {
