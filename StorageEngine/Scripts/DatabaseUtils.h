@@ -5,9 +5,11 @@
 #define MAX_MESSAGE_LEN 384
 #define MAX_ERROR_LEN 256
 #define PROTON_DB "ProtonDB"
-#define DATABASE "db"
+#define DB "db"
 #define DATABASE_META "db/.database.meta"
 #define COLLECTION_META ".collection.meta"
+#define NEW_OUTPUT ((Output){0})
+#define NEW_ARRAY_OUT ((ArrayOut){0})
 
 #include "cJSON.h"
 #include <stdbool.h>
@@ -23,7 +25,7 @@ typedef enum {
     lessThan,
     lessThanEqual,
     equal,
-    all,
+    all
 } Condition;
 
 typedef enum {
@@ -32,9 +34,32 @@ typedef enum {
     alter
 } Action;
 
+typedef struct {
+    bool success;
+    char message[MAX_MESSAGE_LEN];
+} Output;
+
+typedef struct {
+    int size;
+    char message[MAX_MESSAGE_LEN];
+    char** list;
+} ArrayOut;
+
+typedef struct {
+    const char* databaseName;
+    const char* collectionName;
+    // Conditional arguments
+    const char* key;
+    const char* value;
+    // Data to store
+    const char* data;
+    Condition condition;
+    Action action;
+} QueryConfig;
+
 bool check_database(const char* databaseName);
 void delete_dir_content(const char* directory);
-int load_list(const char* metaFile, char*** list);
+int load_list(const char* metaFile, char*** list, char* error);
 bool dump_binary(const char* fileName, const cJSON* data, char* error);
 cJSON* load_binary(const char* fileName, char* error);
 
@@ -59,6 +84,6 @@ void get_col_file(char* array, const char* databaseName, const char* collectionN
 void get_col_meta(char* array, const char* databaseName);
 void get_database_dir(char* array, const char* databaseName);
 void get_database_meta(char* array);
-void get_message(char* array, const char* message, const char* object);
-
+void get_message(char* buffer, const char* format, ...);
+void get_error(char* buffer, const char* format, ...);
 #endif //DATABASE_UTILS_H

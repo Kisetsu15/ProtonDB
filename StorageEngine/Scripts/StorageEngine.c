@@ -4,263 +4,298 @@
 #include "StorageEngine.h"
 #include "DatabaseUtils.h"
 
-static char path[MAX_PATH_LEN];
+static char filePath[MAX_PATH_LEN];
 static char metaFile[MAX_PATH_LEN];
 static char databaseMeta[MAX_PATH_LEN];
-static char message[MAX_MESSAGE_LEN];
 static char error[MAX_ERROR_LEN];
 
-__declspec(dllexport) const char* create_database(const char* databaseName) {
+EXPORT Output create_database(const QueryConfig config) {
+    Output output = NEW_OUTPUT;
 
-    if (strlen(databaseName) + 4 >= sizeof(path)) return "warning: Database name too long";
-
-    if (check_database(databaseName)) {
-        get_message(message,"warning: Database '%s' already exists",databaseName);
-        return message;
+    if (strlen(config.databaseName) + 4 >= sizeof(filePath)) {
+        get_message(output.message, "warning: Database name too long");
+        return output;
     }
-
-    get_database_dir(path, databaseName);
     get_database_meta(databaseMeta);
-    if (_mkdir(path) != 0 || !append_entry(databaseMeta, databaseName, path, database, error)) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Failed to create database \n%s", error);
-        return message;
+    if (check_database(config.databaseName)) {
+        get_message(output.message,"warning: Database '%s' already exists",config.databaseName);
+        return output;
     }
 
-    get_message(message, "Database '%s' created", databaseName);
-    return message;
+    get_database_dir(filePath, config.databaseName);
 
+    if (_mkdir(filePath) != 0 || !append_entry(databaseMeta, config.databaseName, filePath, database, error)) {
+        get_message(output.message,"fatal: Failed to create database \n%s", error);
+        return output;
+    }
+
+    output.success = true;
+    get_message(output.message, "Database '%s' created", config.databaseName);
+    return output;
 }
 
-__declspec(dllexport) const char* drop_database(const char* databaseName) {
-    if (!check_database(databaseName)) {
-        get_message(message,"fatal: Database '%s' doesn't exists", databaseName);
-        return message;
+EXPORT Output drop_database(const QueryConfig config) {
+    Output output = NEW_OUTPUT;
+
+    if (!check_database(config.databaseName)) {
+        get_message(output.message,"fatal: Database '%s' doesn't exists", config.databaseName);
+        return output;
     }
 
-    get_database_dir(path, databaseName);
+    get_database_dir(filePath, config.databaseName);
     get_database_meta(databaseMeta);
-    delete_dir_content(path);
+    delete_dir_content(filePath);
 
-    if (_rmdir(path) != 0 || !remove_entry(databaseMeta, databaseName, database, error)) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Failed to drop database \n%s", error);
-        return message;
+    if (_rmdir(filePath) != 0 || !remove_entry(databaseMeta, config.databaseName, database, error)) {
+        get_message(output.message, "fatal: Failed to drop database \n%s", error);
+        return output;
     }
-    get_message(message,"Database '%s' dropped", databaseName);
-    return message;
+
+    output.success = true;
+    get_message(output.message,"Database '%s' dropped", config.databaseName);
+    return output;
 }
 
-__declspec(dllexport) const char** list_database(int* count) {
+EXPORT ArrayOut list_database() {
+    ArrayOut arrayOut = NEW_ARRAY_OUT;
     get_database_meta(metaFile);
-    char** list = NULL;
-    *count = load_list(metaFile, &list);
-    return list;
+    char** _list = NULL;
+    arrayOut.size = load_list(metaFile, &_list, error);
+    if (arrayOut.size < 0) {
+        get_message(arrayOut.message,"fatal: Failed to load database \n%s", error);
+    }
+    arrayOut.list = _list;
+    return arrayOut;
 }
 
+EXPORT Output create_collection(const QueryConfig config) {
+    Output output = NEW_OUTPUT;
 
-
-__declspec(dllexport) const char* create_collection(const char* databaseName, const char* collectionName) {
-
-    if (!check_database(databaseName)) {
-        get_message(message,"fatal: Database '%s' does not exist", databaseName);
-        return message;
+    if (!check_database(config.databaseName)) {
+        get_message(output.message,"fatal: Database '%s' does not exist", config.databaseName);
+        return output;
     }
 
-    if (strlen(collectionName) + strlen(databaseName) + 8 >= sizeof(path)) {
-        snprintf(message,MAX_MESSAGE_LEN,"warning: Collection name too long");
-        return message;
+    if (strlen(config.collectionName) + strlen(config.databaseName) + 8 >= sizeof(filePath)) {
+        get_message(output.message,"warning: Collection name too long");
+        return output;
     }
 
-    get_col_meta(metaFile, databaseName);
-    get_col_file(path, databaseName, collectionName);
+    get_col_meta(metaFile, config.databaseName);
+    get_col_file(filePath, config.databaseName, config.collectionName);
 
-    if (!append_entry(metaFile, collectionName, path, collection, error)) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Collection could not be created\n%s", error);
-        return message;
+    if (!append_entry(metaFile, config.collectionName, filePath, collection, error)) {
+        get_message(output.message, "fatal: Collection could not be created\n%s", error);
+        return output;
     }
 
 
-    cJSON* data = cJSON_CreateArray();
-    if (!data || !dump_binary(path, data, error)) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Collection could not be created\n%s", error);
+    cJSON* _data = cJSON_CreateArray();
+    if (!_data || !dump_binary(filePath, _data, error)) {
+        get_message(output.message, "fatal: Collection could not be created\n%s", error);
     } else {
-        get_message(message,"Collection '%s' created", collectionName);
+        get_message(output.message,"Collection '%s' created", config.collectionName);
+        output.success = true;
     }
 
-    cJSON_Delete(data);
-    return message;
+    cJSON_Delete(_data);
+    return output;
 }
 
-__declspec(dllexport) const char* drop_collection(const char* databaseName, const char* collectionName) {
-    if (!check_database(databaseName)) {
-        get_message(message,"fatal: Database '%s' doesn't exist\n", databaseName);
-        return message;
+EXPORT Output drop_collection(const QueryConfig config) {
+    Output output = NEW_OUTPUT;
+
+    if (!check_database(config.databaseName)) {
+        get_message(output.message,"fatal: Database '%s' doesn't exist\n", config.databaseName);
+        return output;
     }
-    get_col_meta(metaFile, databaseName);
-    if (remove_entry(metaFile, collectionName, collection, error)) {
-        get_col_file(path, databaseName, collectionName);
-        remove(path);
-        snprintf(message, MAX_MESSAGE_LEN, "Collection '%s' dropped", collectionName);
+    get_col_meta(metaFile, config.databaseName);
+    if (remove_entry(metaFile, config.collectionName, collection, error)) {
+        get_col_file(filePath, config.databaseName, config.collectionName);
+        remove(filePath);
+        get_message(output.message, "Collection '%s' dropped", config.collectionName);
+        output.success = true;
     } else {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Could not delete collection '%s'\n %s", collectionName, error);
+        get_message(output.message, "fatal: Could not delete collection '%s'\n %s", config.collectionName, error);
     }
 
-    return message;
+    return output;
 }
 
-__declspec(dllexport) const char** list_collection(const char* databaseName, int* count) {
-    get_col_meta(path, databaseName);
-    char** list = NULL;
-    *count = load_list(path, &list);
-    return list;
+EXPORT ArrayOut list_collection(const QueryConfig config) {
+    ArrayOut arrayOut = NEW_ARRAY_OUT;
+
+    get_col_meta(filePath, config.databaseName);
+    char** _list = NULL;
+    arrayOut.size = load_list(filePath, &_list, error);
+    if (arrayOut.size < 0) {
+        get_message(arrayOut.message,"fatal: Failed to load collection \n%s", error);
+    }
+    arrayOut.list = _list;
+    return arrayOut;
 }
 
-__declspec(dllexport) const char* insert_document(const char* databaseName, const char* collectionName, const char* document) {
-    get_col_file(path, databaseName, collectionName);
+EXPORT Output insert_document(const QueryConfig config) {
+    Output output = NEW_OUTPUT;
 
-    cJSON* root = load_binary(path, error);
-    if (!root) {
-        create_collection(databaseName, collectionName);
-        root = cJSON_CreateArray();
+    get_col_file(filePath, config.databaseName, config.collectionName);
+
+    cJSON* _root = load_binary(filePath, error);
+    if (!_root) {
+        create_collection(config);
+        _root = cJSON_CreateArray();
     }
 
-    cJSON* parsedDocument = cJSON_Parse(document);
-    if (!parsedDocument) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Failed to parse document \n%s", error);
-        cJSON_Delete(root);
-        return message;
+    cJSON* _parsedDocument = cJSON_Parse(config.data);
+    if (!_parsedDocument) {
+        get_message(output.message, "fatal: Failed to parse document \n%s", error);
+        cJSON_Delete(_root);
+        return output;
     }
 
-    int insertedCount = 0;
+    int _insertedCount = 0;
 
-    if (cJSON_IsArray(parsedDocument)) {
-        cJSON* item = NULL;
-        cJSON_ArrayForEach(item, parsedDocument) {
-            cJSON* copy = cJSON_Duplicate(item, 1);
-            if (copy) {
-                cJSON_AddItemToArray(root, copy);
-                insertedCount++;
+    if (cJSON_IsArray(_parsedDocument)) {
+        cJSON* _item = NULL;
+        cJSON_ArrayForEach(_item, _parsedDocument) {
+            cJSON* _copy = cJSON_Duplicate(_item, 1);
+            if (_copy) {
+                cJSON_AddItemToArray(_root, _copy);
+                _insertedCount++;
             }
         }
-    } else if (cJSON_IsObject(parsedDocument)) {
-        cJSON* copy = cJSON_Duplicate(parsedDocument, 1);
-        if (copy) {
-            cJSON_AddItemToArray(root, copy);
-            insertedCount++;
+    } else if (cJSON_IsObject(_parsedDocument)) {
+        cJSON* _copy = cJSON_Duplicate(_parsedDocument, 1);
+        if (_copy) {
+            cJSON_AddItemToArray(_root, _copy);
+            _insertedCount++;
         }
     } else {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Document must be a JSON object or array of objects\n%s", error);
-        return  message;
+        get_message(output.message, "fatal: Document must be a JSON object or array of objects\n%s", error);
+        return output;
     }
 
-    if (!dump_binary(path, root, error)) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Failed to insert document \n%s", error);
-        return message;
+    if (!dump_binary(filePath, _root, error)) {
+        get_message(output.message, "fatal: Failed to insert document \n%s", error);
+        return output;
     }
 
-    snprintf(message, MAX_MESSAGE_LEN, "Inserted %d", insertedCount);
-    cJSON_Delete(parsedDocument);
-    cJSON_Delete(root);
-    return message;
+    output.success = true;
+    get_message(output.message, "Inserted %d", _insertedCount);
+    cJSON_Delete(_parsedDocument);
+    cJSON_Delete(_root);
+    return output;
 }
 
 
-__declspec(dllexport) const char** print_all_documents(const char* databaseName, const char* collectionName, char* message, int* count) {
-    return print_documents(databaseName, collectionName, NULL, NULL, all, message, count);
+EXPORT ArrayOut print_all_documents(const QueryConfig config) {
+    return print_documents(config);
 }
 
 
-__declspec(dllexport) const char** print_documents(const char* databaseName, const char* collectionName, const char* key, const char* value, const Condition condition, char* message, int* count) {
-    get_col_file(path, databaseName, collectionName);
-    cJSON* collection = load_binary(path, error);
-    if (!collection) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Collection file for '%s' not found or empty\n%s", databaseName, error);
-        return NULL;
+EXPORT ArrayOut print_documents(const QueryConfig config) {
+    ArrayOut arrayOut = NEW_ARRAY_OUT;
+    get_col_file(filePath, config.databaseName, config.collectionName);
+    cJSON* _collection = load_binary(filePath, error);
+
+    if (!_collection) {
+        get_message(arrayOut.message, "fatal: Collection file for '%s' not found or empty\n%s", config.databaseName, error);
+        arrayOut.size = -1;
+        return arrayOut;
     }
-    if (!cJSON_IsArray(collection)) {
-        snprintf(message, MAX_MESSAGE_LEN,"fatal: Malformed array in collection '%s'\n%s", databaseName, error);
-        cJSON_Delete(collection);
-        return NULL;
+
+    if (!cJSON_IsArray(_collection)) {
+        get_message(arrayOut.message,"fatal: Malformed array in collection '%s'\n%s", config.databaseName, error);
+        arrayOut.size = -1;
+        cJSON_Delete(_collection);
+        return arrayOut;
     }
-    char** list = NULL;
-    *count = print_filtered_documents(collection, key, value, condition, &list, error);
-    cJSON_Delete(collection);
-    return list;
+
+    char** _list = NULL;
+    arrayOut.size = print_filtered_documents(_collection, config.key, config.value, config.condition, &_list, error);
+    cJSON_Delete(_collection);
+    arrayOut.list = _list;
+    return arrayOut;
 }
 
-__declspec(dllexport) const char* remove_documents(const char* databaseName, const char* collectionName, const char* key,
-        const char* value, const Condition condition) {
+EXPORT Output remove_documents(const QueryConfig config) {
+    Output output = NEW_OUTPUT;
+    get_col_file(filePath, config.databaseName, config.collectionName);
+    cJSON* _collection = load_binary(filePath, error);
+    if (!_collection || !cJSON_IsArray(_collection)) {
+        get_message(output.message, "fatal: Collection file for '%s' not found or empty\n%s", config.databaseName, error);
+        if (_collection) cJSON_Delete(_collection);
+        return output;
+    }
 
-    get_col_file(path, databaseName, collectionName);
-    cJSON* collection = load_binary(path, error);
+    const int _deletedCount = remove_filtered_documents(_collection, config.key, config.value, config.condition, error);
+
+    if (_deletedCount > 0 && dump_binary(filePath, _collection, error)) {
+        get_message(output.message, "Document removed %d", _deletedCount);
+        output.success = true;
+    } else if (_deletedCount > 0) {
+        get_message(output.message, "fatal: Failed to delete document\n%s", error);
+    }else {
+        get_message(output.message, "No document found for specified condition");
+    }
+
+    cJSON_Delete(_collection);
+    return output;
+}
+
+EXPORT Output remove_all_documents(const QueryConfig config) {
+    return remove_documents(config);
+}
+
+EXPORT Output update_documents(const QueryConfig config) {
+    Output output = NEW_OUTPUT;
+
+
+    if (!config.databaseName || !config.collectionName || !config.data) {
+        get_message(output.message,"fatal: Missing required query parameters");
+        return output;
+    }
+
+    get_col_file(filePath, config.databaseName, config.collectionName);
+    cJSON* collection = load_binary(filePath, error);
     if (!collection || !cJSON_IsArray(collection)) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Collection file for '%s' not found or empty\n%s", databaseName, error);
+        get_message(output.message,
+                 "fatal: Collection file for '%s' not found or invalid\n%s", config.databaseName, error);
         if (collection) cJSON_Delete(collection);
-        return message;
+        return output;
     }
 
-    const int deletedCount = remove_filtered_documents(collection, key, value, condition, error);
+    const int _count = update_filtered_documents(collection, config.key, config.value,
+                                          config.condition, config.action, config.data, error);
 
-    if (deletedCount > 0) {
-        if (!dump_binary(path, collection, error)) {
-            snprintf(message, MAX_MESSAGE_LEN, "fatal: Failed to delete document\n%s", error);
-        } else {
-            snprintf(message, MAX_MESSAGE_LEN, "Document removed %d", deletedCount);
+    if (_count > 0) {
+        if (!dump_binary(filePath, collection, error)) {
+            get_message(output.message, "fatal: Failed to save updated documents\n%s", error);
+            cJSON_Delete(collection);
+            return output;
         }
-    } else if (deletedCount < 0) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Failed to delete document\n%s", error);
+        get_message(output.message, "Document updated %d", _count);
+        output.success = true;
+    } else if (_count < 0) {
+        get_message(output.message, "fatal: Failed to update document\n%s", error);
     } else {
-        snprintf(message, MAX_MESSAGE_LEN, "No document found for given condition");
+        get_message(output.message, "No document found for given condition");
     }
 
     cJSON_Delete(collection);
-    return message;
+    return output;
 }
 
-__declspec(dllexport) const char* remove_all_documents(const char* databaseName, const char* collectionName) {
-    return remove_documents(databaseName, collectionName, NULL, NULL, all);
+
+EXPORT Output update_all_documents(const QueryConfig config) {
+    return update_documents(config);
 }
 
-__declspec(dllexport) const char* update_documents(const char* databaseName, const char* collectionName,
-        const char* key, const char* value, const Condition condition, const Action action, const char* data) {
-
-    get_col_file(path, databaseName, collectionName);
-    cJSON* collection = load_binary(path, error);
-    if (!collection || !cJSON_IsArray(collection)) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Collection file for '%s' not found or empty\n%s", databaseName, error);
-        if (collection) cJSON_Delete(collection);
-        return message;
+EXPORT void free_list(char** list, const int size) {
+    for (int i = 0; i < size; i++) {
+        free(list[i]);
     }
-
-    const int updatedCount = update_filtered_documents(collection, key, value, condition, action, data, error);
-
-    if (updatedCount > 0) {
-        if (!dump_binary(path, collection, error)) {
-            snprintf(message, MAX_MESSAGE_LEN, "fatal: Failed to update document\n%s", error);
-            return message;
-        }
-        snprintf(message, MAX_MESSAGE_LEN, "Document updated %d", updatedCount);
-    } else if (updatedCount < 0) {
-        snprintf(message, MAX_MESSAGE_LEN, "fatal: Failed to update document\n%s", error);
-    } else {
-        snprintf(message, MAX_MESSAGE_LEN, "No document found for given condition");
-    }
-
-    cJSON_Delete(collection);
-    return message;
-}
-
-__declspec(dllexport) const char* update_all_documents(const char* databaseName, const char* collectionName, const Action action, const char* data) {
-    return update_documents(databaseName, collectionName, NULL, NULL, all, action, data);
-}
-
-__declspec(dllexport) void free_list(char** list) {
     free(list);
 }
-
-__declspec(dllexport) void free_count(int* count) {
-    free(count);
-}
-
-
 
 

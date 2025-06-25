@@ -27,12 +27,12 @@ namespace ProtonDB.CORE {
             }
 
             if (name == null || name == ProtonMeta.CurrentDatabase) {
-                StorageEngine.DeleteDatabase(ProtonMeta.CurrentDatabase);
+                StorageEngine.DropDatabase(ProtonMeta.CurrentDatabase);
                 ProtonMeta.CurrentDatabase = ProtonMeta.defaultDatabase;
                 return;
             }
 
-            StorageEngine.DeleteDatabase(name);
+            StorageEngine.DropDatabase(name);
 
         }
 
