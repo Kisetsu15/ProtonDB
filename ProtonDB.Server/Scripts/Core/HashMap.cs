@@ -1,5 +1,10 @@
 ﻿namespace ProtonDB.Server {
     namespace Core {
+        public struct Profile {
+            public string profileName;
+            public ProfileInfo profileInfo;
+        }
+
         public record ProfileInfo(
             string Checksum,
             string Privilege,
@@ -9,9 +14,8 @@
 
         public class HashMap {
             private readonly Dictionary<string, ProfileInfo> _users = [];
-
+            public int Count => _users.Count;
             public IEnumerable<string> UserNames => _users.Keys;
-            public IEnumerable<ProfileInfo> Infos => _users.Values;
 
             public bool Add(string userName, ProfileInfo info) {
                 return _users.TryAdd(userName, info);

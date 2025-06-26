@@ -14,6 +14,7 @@ namespace ProtonDB.Server {
                 return query.Object switch {
                     Token._database => ExecuteDatabaseCommand(query),
                     Token.collection => ExecuteCollectionCommand(query),
+                    Token.profile => ExecuteProfileCommand(query),
                     _ => ExecuteDocumentCommand(query)
                 };
             }
@@ -54,6 +55,15 @@ namespace ProtonDB.Server {
                     Token.update => Document.Update(query),
                     Token.print => Document.Print(query),
                     _ => ["Invalid document command"]
+                };
+            }
+
+            private static string[] ExecuteProfileCommand(Query query) {
+                return query.Operation switch {
+                    Token.create => Profiles.Create(query.Argument!),
+                    Token.drop => Profiles.Delete(query.Argument!),
+                    Token.list => Profiles.List(),
+                    _ => ["Invalid profile command"]
                 };
             }
         }

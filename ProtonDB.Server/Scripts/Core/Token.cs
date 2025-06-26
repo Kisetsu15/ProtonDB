@@ -4,6 +4,7 @@ namespace ProtonDB.Server {
             // Query tokens
             public const string _database = "db";
             public const string collection = "collection";
+            public const string profile = "profile";
             public const string use = "use";
             public const string create = "create";
             public const string drop = "drop";
@@ -39,7 +40,7 @@ namespace ProtonDB.Server {
             public const string _userConfigFile = "userConfig.json";
 
             // Operation tokens
-            public const string protonDB = "protonDB";
+            public const string proton = "proton";
             public const string _help = ":h";
             public const string _quit = ":q";
             public const string quit = "quit";
