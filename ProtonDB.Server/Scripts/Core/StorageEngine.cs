@@ -50,14 +50,14 @@ namespace ProtonDB.Server {
         [StructLayout(LayoutKind.Sequential)]
         public struct Output {
             public bool success;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ProtonMeta.maxMessageLength)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Meta.maxMessageLength)]
             public string? message;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct ArrayOut {
             public int size;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = ProtonMeta.maxMessageLength)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Meta.maxMessageLength)]
             public string message;
             public IntPtr list;
         }

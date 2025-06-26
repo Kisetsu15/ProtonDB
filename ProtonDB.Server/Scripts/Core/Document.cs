@@ -14,7 +14,7 @@ namespace ProtonDB.Server {
 
                 Result result = StorageEngine.Link(
                     new QueryConfig {
-                        databaseName = ProtonMeta.CurrentDatabase,
+                        databaseName = Meta.CurrentDatabase,
                         collectionName = query.Object,
                         data = query.Argument
                     },
@@ -29,7 +29,7 @@ namespace ProtonDB.Server {
                 if (query.Argument == null) {
                     result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = ProtonMeta.CurrentDatabase,
+                            databaseName = Meta.CurrentDatabase,
                             collectionName = query.Object,
                         },
                         StorageEngine.remove_all_documents
@@ -44,7 +44,7 @@ namespace ProtonDB.Server {
 
                 result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = ProtonMeta.CurrentDatabase,
+                            databaseName = Meta.CurrentDatabase,
                             collectionName = query.Object,
                             key = condition.Value.key,
                             value = condition.Value.value,
@@ -60,7 +60,7 @@ namespace ProtonDB.Server {
                 if (query.Argument == null) {
                     result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = ProtonMeta.CurrentDatabase,
+                            databaseName = Meta.CurrentDatabase,
                             collectionName = query.Object
                         },
                         StorageEngine.print_all_documents
@@ -75,7 +75,7 @@ namespace ProtonDB.Server {
 
                 result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = ProtonMeta.CurrentDatabase,
+                            databaseName = Meta.CurrentDatabase,
                             collectionName = query.Object,
                             key = condition.Value.key,
                             value = condition.Value.value,
@@ -104,7 +104,7 @@ namespace ProtonDB.Server {
                 if (component.Value.condition == null) {
                     result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = ProtonMeta.CurrentDatabase,
+                            databaseName = Meta.CurrentDatabase,
                             collectionName = query.Object,
                             data = data,
                             action = action
@@ -120,7 +120,7 @@ namespace ProtonDB.Server {
 
                 result = StorageEngine.Link(
                     new QueryConfig {
-                        databaseName = ProtonMeta.CurrentDatabase,
+                        databaseName = Meta.CurrentDatabase,
                         collectionName = query.Object,
                         key = condition.Value.key,
                         value = condition.Value.value,

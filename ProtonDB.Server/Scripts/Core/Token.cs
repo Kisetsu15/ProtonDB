@@ -20,9 +20,23 @@ namespace ProtonDB.Server {
             public const string action = "action";
             public const string data = "data";
             public const string condition = "condition";
+            public const string guest = "guest";
+            public const string user = "user";
+            public const string admin = "admin";
+            public const string password = "password";
+            public const string privilege = "privilege";
+            public const string created_at = "created_at";
+            public const string database = "database";
+            public const string salt = "salt";
+
+
 
             // File tokens
-            public const string databaseMetaFile = ".database.meta";
+            public const string _databaseMetaFile = ".database.meta";
+            public const string _protonDB = "ProtonDB";
+            public const string _coreDir = ".core";
+            public const string _authDir = "auth";
+            public const string _userConfigFile = "userConfig.json";
 
             // Operation tokens
             public const string protonDB = "protonDB";

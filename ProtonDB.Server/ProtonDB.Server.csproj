@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kisetsu.Utils" Version="1.0.4" />
+    <PackageReference Include="Kisetsu.Utils" Version="1.0.6" />
   </ItemGroup>
 
 </Project>

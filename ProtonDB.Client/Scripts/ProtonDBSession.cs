@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 
-namespace Kisetsu.ProtonDB {
+namespace ProtonDB.Client {
 
     public class ProtonDBSession : IDisposable {
         private readonly TcpClient _client;

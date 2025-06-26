@@ -6,15 +6,15 @@
                     return ["Database name cannot be empty"];
                 }
 
-                if (name == ProtonMeta.CurrentDatabase) {
+                if (name == Meta.CurrentDatabase) {
                     return [$"Already using database '{name}'"];
                 }
 
-                if (!ProtonMeta.GetDatabaseList().ContainsKey(name)) {
+                if (!Meta.GetDatabaseList().ContainsKey(name)) {
                     return Linker(name, StorageEngine.create_database, $"Switched to database: {name}");
                 }
 
-                ProtonMeta.CurrentDatabase = name;
+                Meta.CurrentDatabase = name;
                 return [$"Switched to database: {name}"];
             }
 
@@ -22,12 +22,12 @@
             public static string[] Create(string name) => Linker(name, StorageEngine.create_database);
 
             public static string[] Drop(string name) {
-                if ((name == null && ProtonMeta.CurrentDatabase == ProtonMeta.defaultDatabase) || name == ProtonMeta.defaultDatabase) {
+                if ((name == null && Meta.CurrentDatabase == Meta.defaultDatabase) || name == Meta.defaultDatabase) {
                     return ["fatal: Cannot drop the default database"];
                 }
 
-                if (name == null || name == ProtonMeta.CurrentDatabase) {
-                    return Linker(ProtonMeta.CurrentDatabase, StorageEngine.drop_database);
+                if (name == null || name == Meta.CurrentDatabase) {
+                    return Linker(Meta.CurrentDatabase, StorageEngine.drop_database);
                 }
 
                 return Linker(name, StorageEngine.drop_database);

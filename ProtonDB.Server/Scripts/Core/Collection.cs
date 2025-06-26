@@ -7,10 +7,10 @@
 
             public static string[] List(string name) {
                 Result result = new();
-                if (name == null || name == ProtonMeta.CurrentDatabase) {
+                if (name == null || name == Meta.CurrentDatabase) {
                     result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = ProtonMeta.CurrentDatabase,
+                            databaseName = Meta.CurrentDatabase,
                         },
                         StorageEngine.list_collection
                     );
@@ -36,7 +36,7 @@
                 }
                 Result result = StorageEngine.Link(
                     new QueryConfig {
-                        databaseName = ProtonMeta.CurrentDatabase,
+                        databaseName = Meta.CurrentDatabase,
                         collectionName = name,
                     },
                     func
