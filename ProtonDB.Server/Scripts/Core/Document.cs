@@ -88,7 +88,6 @@ namespace ProtonDB.Server {
 
             public static string[] Update(Query query) {
                 if (query.Argument == null) {
-                    Terminal.WriteLine("Update requires a document argument");
                     return ["Update requires a document argument"];
                 }
                 string argument = query.Argument;

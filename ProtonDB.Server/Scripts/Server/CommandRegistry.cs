@@ -5,8 +5,7 @@ namespace ProtonDB.Server {
     public class CommandRegistry {
         private static readonly Dictionary<string, Func<IServerCommand>> commands = new() {
             { Command.login, () => new LoginCommand() },
-            { Command.debugOn, () => new DebugCommand(true) },
-            { Command.debugOff, () => new DebugCommand(false) },
+            { Command.debugOn, () => new DebugCommand() },
             { Command.fetch, () => new FetchCommand() },
             { Command.query, () => new QueryCommand() },
             { Command.quit, () => new QuitCommand() }

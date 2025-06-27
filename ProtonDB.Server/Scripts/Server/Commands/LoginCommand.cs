@@ -11,7 +11,7 @@ namespace ProtonDB.Server {
                     Status = "error",
                     Message = "Username and password required"
                 }));
-                Terminal.Log("Login command received with no data.");
+
                 return;
             }
 
@@ -21,7 +21,6 @@ namespace ProtonDB.Server {
                     Status = "error",
                     Message = "Invalid login format. Use: username,password"
                 }));
-                Terminal.Log("Login command received with invalid format.");
                 return;
             }
 
@@ -31,7 +30,6 @@ namespace ProtonDB.Server {
             bool success = Profiles.Login(user,pass);
 
             session.IsAuthenticated = success;
-            Terminal.Log($"Login attempt for user '{user}': '{pass}' : {(success ? "Success" : "Failure")}");
             await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {
                 Status = success ? "ok" : "error",
                 Message = success ? "Login successful" : "Invalid username or password"

@@ -43,7 +43,6 @@ namespace ProtonDB.Server {
                     if (input == null) break;
                     var request = JsonSerializer.Deserialize<Request>(input!); 
                     if (request == null) continue;
-                    Terminal.Log(request.Command!);
                     if (!session.IsAuthenticated && request.Command?.ToUpperInvariant() != Command.login) {
                         await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {
                             Status = "error",

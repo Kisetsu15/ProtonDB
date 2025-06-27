@@ -69,11 +69,9 @@ namespace ProtonDB.Server {
 
             public static bool Login(string userName, string password) {
                 if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password)) return false;
-                Terminal.Log($"Login attempt for user: {userName} with password: {password}");
                 if (ValidateProfile(userName, password)) {
                     ProfileInfo? profileInfo = Load(Meta.ProfileConfig)[userName];
                     if (profileInfo == null) return false;
-                    Terminal.Log($"Login successful for user: {userName}, privilege: {profileInfo.Privilege}, createdAt: {profileInfo.CreatedAt}");
                     Meta.CurrentProfile = new Profile {
                         profileName = userName,
                         profileInfo = profileInfo
@@ -81,7 +79,6 @@ namespace ProtonDB.Server {
                     
                     return true;
                 }
-                Terminal.Log($"Login failed for user: {userName}");
                 return false;
             }
 
@@ -291,13 +288,8 @@ namespace ProtonDB.Server {
             }
 
             private static bool ValidateProfile(string userName, string password) {
-                Terminal.Log($"Validating profile for user: {userName}");
                 var config = Load(Meta.ProfileConfig);
-                foreach (var name in config.UserNames) {
-                    Terminal.Log($"Checking profile for user: {name}");
-                }
                 if (!config.TryGetValue(userName, out var info) || info == null) return false;
-                Terminal.Log($"Validating profile for user: {userName}, privilege: {info.Privilege}, createdAt: {info.CreatedAt}");
                 string checksum = GenerateChecksum(userName, password, info.Privilege, info.CreatedAt, info.Salt);
                 return checksum.Equals(info.Checksum);
             }
@@ -341,7 +333,6 @@ namespace ProtonDB.Server {
             }
 
             private static string GenerateChecksum(string userName, string password, string privilege, string createdAt, string salt) {
-                Terminal.Log($"Generating checksum for user: {userName}, privilege: {privilege}, createdAt: {createdAt}");
                 string key = $"{Storage._protonDB}-{privilege}-{userName}-{password}-{createdAt}-{salt}";
                 return Hash.Compute(key, Algorithm.SHA256, Case.Lower);
             }
