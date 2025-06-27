@@ -7,7 +7,7 @@ namespace ProtonDB.Server {
 
         public static class Meta {
             private static string currentDatabase = Token.proton;
-            private static string DatabaseMetaFile => Path.Combine(DatabaseDirectory, Token._databaseMetaFile);
+            private static string DatabaseMetaFile => Path.Combine(DatabaseDirectory, Token._databaseMeta);
             private static Profile currentProfile = Profiles.Guest();
 
             public static Profile CurrentProfile {
@@ -17,17 +17,18 @@ namespace ProtonDB.Server {
 
             public static string CurrentUser => currentProfile.profileName;
             public static string CurrentPrivilege => currentProfile.profileInfo.Privilege;
+            public static string CurrentUserDatabases => currentDatabase;
             public static string ProtonDBDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Token._protonDB);
-            public static string CoreDirectory => Path.Combine(ProtonDBDirectory, Token._coreDir);
+            public static string CoreDirectory => Token._coreDir;
             public static string DatabaseDirectory => Path.Combine(ProtonDBDirectory, Token._database);
             public static string AuthDirectory => Path.Combine(CoreDirectory, Token._authDir);
-            public static string UserConfigFile => Path.Combine(AuthDirectory, Token._userConfigFile);
+            public static string UserConfigFile => Path.Combine(AuthDirectory, Token._profileConfig);
 
             public const string defaultDatabase = Token.proton;
             public const int maxMessageLength = 384;
             public static string CurrentDatabase { get => currentDatabase; set => currentDatabase = value; }
             public static Dictionary<string, string> GetDatabaseList() => (!File.Exists(DatabaseMetaFile)) ?
-                [] : Json.Load<string>(Path.Combine(DatabaseDirectory, Token._databaseMetaFile));
+                [] : Json.Load<string>(Path.Combine(DatabaseDirectory, Token._databaseMeta));
 
 
             public static void Initialize() {
