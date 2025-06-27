@@ -2,15 +2,16 @@
 
 namespace ProtonDB.Client {
     public class Connection : IDisposable {
-        private ProtonDBSession _session;
-        public const string defaultHost = "127.0.0.1";
-        public const int defaultPort = 9090;
-        public ProtonDBSession Session => _session;
-
-        private string _host = defaultHost;
+        private ProtonSession _session;
+        private readonly string _host = defaultHost;
         private readonly int _port = defaultPort;
         private readonly string? _userName = null;
         private readonly string? _password = null;
+
+        public const string defaultHost = "127.0.0.1";
+        public const int defaultPort = 9090;
+        internal ProtonSession Session => _session;
+
 
         private Connection (string host, int port, string? user = null, string? pass = null) {
             _host = host;
@@ -18,7 +19,7 @@ namespace ProtonDB.Client {
             _userName = user;
             _password = pass;
 
-            _session = new ProtonDBSession(_host, _port);
+            _session = new ProtonSession(_host, _port);
             if (_userName != null && _password != null) {
                 Login(_userName, _password);
             }
@@ -42,7 +43,7 @@ namespace ProtonDB.Client {
 
         public void Reconnect() {
             _session.Dispose();
-            _session = new ProtonDBSession(_host, _port);
+            _session = new ProtonSession(_host, _port);
             if (_userName != null && _password != null) {
                 Login(_userName, _password);
             }

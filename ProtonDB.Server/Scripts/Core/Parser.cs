@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Kisetsu.Utils;
+using System.Text.RegularExpressions;
 
 namespace ProtonDB.Server {
     namespace Core {
@@ -61,7 +62,7 @@ namespace ProtonDB.Server {
             private static string[] ExecuteProfileCommand(Query query) {
                 return query.Operation switch {
                     Token.create => Profiles.Create(query.Argument!),
-                    Token.drop => Profiles.Delete(query.Argument!),
+                    Token.delete => Profiles.Delete(query.Argument!),
                     Token.grant => Profiles.Grant(query.Argument!),
                     Token.revoke => Profiles.Revoke(query.Argument!),
                     Token.list => Profiles.List(),

@@ -1,8 +1,9 @@
 ﻿using System.Reflection;
+using Newtonsoft.Json;
 
 namespace ProtonDB.Client{
-    public class Cursor(Connection connection) {
-        private readonly ProtonDBSession _session = connection.Session;
+    public class Cursor(Connection connection) : IDisposable {
+        private readonly ProtonSession _session = connection.Session;
 
         public void Query(string query) {
             var response = _session.QueryAsync(query).GetAwaiter().GetResult();
@@ -28,18 +29,44 @@ namespace ProtonDB.Client{
 
         public string[] FetchAll() {
             var response = _session.FetchAsync().GetAwaiter().GetResult();
-            if (response.Result == null || response.Result.Length == 0) {
-                return [];
-            }
-            return response.Result;
+            return (response.Result == null || response.Result.Length == 0) ? [] : response.Result;
         }
 
-        public string FetchOne() {
-            var response = _session.FetchAsync().GetAwaiter().GetResult();
-            if (response.Result == null || response.Result.Length == 0) {
-                return string.Empty;
+        public T? Map<T>(int index = 0) {
+            var result = FetchOne(index);
+            if (string.IsNullOrWhiteSpace(result)) return default;
+
+            try {
+                return JsonConvert.DeserializeObject<T>(result);
+            } catch {
+                return default;
             }
-            return response.Result[0];
+        }
+
+        public T[] MapAll<T>() {
+            var result = FetchAll();
+            return result
+                .Select(item => {
+                    try {
+                        return JsonConvert.DeserializeObject<T>(item)!;
+                    } catch {
+                        return default!;
+                    }
+                })
+                .Where(x => x != null)
+                .ToArray()!;
+        }
+
+        public (string raw, T? mapped) MapWithRaw<T>(int index = 0) {
+            var result = FetchOne(index);
+            T? obj = string.IsNullOrEmpty(result) ? default : JsonConvert.DeserializeObject<T>(result);
+            return (result, obj);
+        }
+
+
+        public string FetchOne(int index = 0) {
+            var result = FetchAll();
+            return (index > result.Length || result.Length == 0) ? string.Empty : result[index];
         }
 
         public void Debug(bool enable) {
@@ -60,5 +87,7 @@ namespace ProtonDB.Client{
         }
 
         public string Version() => $"ProtonDB v{Assembly.GetExecutingAssembly().GetName().Version}";
+
+        public void Dispose() => _session.Dispose();
     }
 }
