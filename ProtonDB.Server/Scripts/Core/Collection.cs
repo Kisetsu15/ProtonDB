@@ -18,6 +18,10 @@
                     return result.GetOutput();
                 }
 
+                if (Profiles.ValidateAccess(name)) {
+                    return ["Access denied to the database"];
+                }
+
                 result = StorageEngine.Link(
                     new QueryConfig {
                         databaseName = name,

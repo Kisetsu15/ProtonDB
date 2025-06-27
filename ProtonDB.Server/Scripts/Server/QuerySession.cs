@@ -4,5 +4,6 @@ namespace ProtonDB.Server {
         public string[]? Result { get; set; }
         public bool Debug { get; set; } = false;
         public bool ShouldExit { get; set; } = false;
+        public bool IsAuthenticated { get;  set; } = false;
     }
 }

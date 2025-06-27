@@ -1,7 +1,6 @@
 namespace ProtonDB.Server {
     namespace Core {
         public static class Token {
-            // Query tokens
             public const string _database = "db";
             public const string collection = "collection";
             public const string profile = "profile";
@@ -13,27 +12,25 @@ namespace ProtonDB.Server {
             public const string remove = "remove";
             public const string update = "update";
             public const string print = "print";
+            public const string grant = "grant";
+            public const string revoke = "revoke";
+            public const string proton = "proton";
 
-            // Object tokens
+        }
+
+        public static class Command {
+            public const string login = "LOGIN";
+            public const string debugOn = "DEBUG ON";
+            public const string debugOff = "DEBUG OFF";
+            public const string fetch = "FETCH";
+            public const string query = "QUERY";
+            public const string quit = "QUIT";
+        }
+
+        public static class Entity {
             public const string @object = "object";
             public const string operation = "operation";
             public const string argument = "argument";
-            public const string action = "action";
-            public const string data = "data";
-            public const string condition = "condition";
-
-
-
-            // File tokens
-            public const string _databaseMeta = ".database.meta";
-            public const string _protonDB = "ProtonDB";
-            public const string _coreDir = ".core";
-            public const string _authDir = "auth";
-            public const string _profileConfig = "profileConfig.json";
-
-            // Operation tokens
-            public const string proton = "proton";
-
         }
 
         public static class Storage {

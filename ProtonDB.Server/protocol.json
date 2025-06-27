@@ -1,0 +1,23 @@
+{
+  "request": {
+    "format": [
+      {
+        "command": "QUERY | FETCH | EXIT | DEBUG ON | DEBUG OFF",
+        "data": "string // optional"
+      },
+      {
+        "command": "LOGIN",
+        "data": "username,password"
+      }
+    ]
+  },
+  "response": {
+    "format": {
+      "status": "ok | error",
+      "message": "string",
+      "result": [ "string", "..." ]
+    }
+  },
+  "encoding": "UTF-8",
+  "transport": "TCP (one JSON line per message)"
+}

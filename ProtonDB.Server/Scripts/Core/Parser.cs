@@ -8,7 +8,7 @@ namespace ProtonDB.Server {
             public static string[] Execute(string input) {
                 var query = Parse(input);
                 if (query == null) {
-                    return ["Invalid input"];
+                    return ["Invalid Query"];
                 }
 
                 return query.Object switch {
@@ -24,9 +24,9 @@ namespace ProtonDB.Server {
                 if (!match.Success) return null;
 
                 return new Query(
-                    match.Groups[Token.@object].Value,
-                    match.Groups[Token.operation].Value,
-                    string.IsNullOrWhiteSpace(match.Groups[Token.argument].Value) ? null : match.Groups[Token.argument].Value.Trim('"')
+                    match.Groups[Entity.@object].Value,
+                    match.Groups[Entity.operation].Value,
+                    string.IsNullOrWhiteSpace(match.Groups[Entity.argument].Value) ? null : match.Groups[Entity.argument].Value.Trim('"')
                 );
             }
 
@@ -62,6 +62,8 @@ namespace ProtonDB.Server {
                 return query.Operation switch {
                     Token.create => Profiles.Create(query.Argument!),
                     Token.drop => Profiles.Delete(query.Argument!),
+                    Token.grant => Profiles.Grant(query.Argument!),
+                    Token.revoke => Profiles.Revoke(query.Argument!),
                     Token.list => Profiles.List(),
                     _ => ["Invalid profile command"]
                 };

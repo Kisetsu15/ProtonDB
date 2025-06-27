@@ -9,20 +9,20 @@ namespace ProtonDB.Server {
                 if (Meta.CurrentPrivilege != Privilege.admin) {                     
                     return ["Requires admin privilege"];
                 }
-                var arg = Parse(argument, 2, 3);
+                var arg = SplitArgs(argument, 2, 3);
                 if (arg == null) {
                      return ["Invalid Argument"];
                 }
 
-                string? userName = arg.Value.arg1;
-                string? password = arg.Value.arg2;
-                string? privilege = arg.Value.arg3;
+                string? userName = arg[0];
+                string? password = arg[1];
+                string? privilege = arg[2];
 
                 if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(privilege)) {
                     return ["Values cannot be empty"];
                 }
 
-                var userConfig = Load(Token._profileConfig);
+                var userConfig = Load(Meta.ProfileConfig);
                 string createdAt = DateTime.UtcNow.ToString("o");
                 string salt = AES.GenerateSalt();
                 ProfileInfo profile = new(
@@ -34,18 +34,10 @@ namespace ProtonDB.Server {
                 );
 
                 userConfig.Add(userName, profile);
-                Save(Token._profileConfig, userConfig);
+                Save(Meta.ProfileConfig, userConfig);
                 return [$"Profile {privilege} '{userName}' created"];
             }
 
-            private static (string? arg1, string? arg2, string? arg3)? Parse(string Argument, int min = 1, int max = 2) {
-                string[] args = Argument.Split(',');
-                int length = args.Length;
-                if (length < min || length > max) return null;
-                return (args[0].Trim().Trim('"'),
-                    args[1].Trim().Trim('"'),
-                    length > 2 ? args[2].Trim().Trim('"') : Privilege.user);
-            }
 
 
             public static string[] Delete(string userName) {
@@ -59,15 +51,15 @@ namespace ProtonDB.Server {
                 if (userName.Equals(Meta.CurrentUser, StringComparison.OrdinalIgnoreCase)) {
                     return ["Cannot delete the current profile"];
                 }
-                var userConfig = Load(Token._profileConfig);
+                var userConfig = Load(Meta.ProfileConfig);
                 if (userConfig.TryGetValue(userName, out ProfileInfo? profile)) {
                     if (profile == null) {
                         userConfig.Remove(userName);
-                        Save(Token._profileConfig, userConfig);
+                        Save(Meta.ProfileConfig, userConfig);
                         return ["Profile not found"];
                     }
                     userConfig.Remove(userName);
-                    Save(Token._profileConfig, userConfig);
+                    Save(Meta.ProfileConfig, userConfig);
                     return [$"Profile '{userName}' deleted"];
                 } else {
                     return [$"Profile '{userName}' does not exist"];
@@ -75,43 +67,29 @@ namespace ProtonDB.Server {
             }
 
 
-            public static string[] Login(string argument) {
-
-                var arg =  Parse(argument);
-                if (arg == null) {
-                    return ["Invalid Argument"];
-                }
-                string? userName = arg.Value.arg1;
-                string? password = arg.Value.arg2;
-
-                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password)) {
-                    return ["Username and password cannot be empty"];
-                }
-                if (Meta.CurrentUser != userName) {
-                    return ["Already logged in"];
-                }
-
+            public static bool Login(string userName, string password) {
+                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password)) return false;
+                Terminal.Log($"Login attempt for user: {userName} with password: {password}");
                 if (ValidateProfile(userName, password)) {
-                    ProfileInfo? profileInfo = Load(Token._profileConfig)[userName];
-                    if (profileInfo == null) {
-                        return ["Profile not found"];
-                    }
-
+                    ProfileInfo? profileInfo = Load(Meta.ProfileConfig)[userName];
+                    if (profileInfo == null) return false;
+                    Terminal.Log($"Login successful for user: {userName}, privilege: {profileInfo.Privilege}, createdAt: {profileInfo.CreatedAt}");
                     Meta.CurrentProfile = new Profile {
                         profileName = userName,
                         profileInfo = profileInfo
                     };
-                    return [$"Login successful"];
-                } else {
-                    return ["Invalid credentials"];
+                    
+                    return true;
                 }
+                Terminal.Log($"Login failed for user: {userName}");
+                return false;
             }
 
             public static string[] List() {
                 if (Meta.CurrentPrivilege != Privilege.admin) {
                     return ["Requires admin privilege"];
                 }
-                var userConfig = Load(Token._profileConfig);
+                var userConfig = Load(Meta.ProfileConfig);
                 if (userConfig == null) {
                     return ["No profiles found"];
                 }
@@ -127,12 +105,12 @@ namespace ProtonDB.Server {
             }
 
             public static string[] Grant(string Argument) {
-                var arg = Parse(Argument);
+                var arg = SplitArgs(Argument);
                 if (arg == null) {
                     return ["Invalid Argument"];
                 }
-                string? userName = arg.Value.arg1;
-                string? database = arg.Value.arg2;
+                string? userName = arg[0];
+                string? database = arg[1];
 
                 if (Meta.CurrentPrivilege == Privilege.guest) {
                     return ["Guest cannot grant access"];
@@ -147,12 +125,12 @@ namespace ProtonDB.Server {
             }
 
             public static string[] Revoke(string Argument) {
-                var arg = Parse(Argument);
+                var arg = SplitArgs(Argument);
                 if (arg == null) {
                     return ["Invalid Argument"];
                 }
-                string? userName = arg.Value.arg1;
-                string? database = arg.Value.arg2;
+                string? userName = arg[0];
+                string? database = arg[1];
                 if (Meta.CurrentPrivilege == Privilege.guest) {
                     return ["Guest cannot revoke access"];
                 }
@@ -179,9 +157,9 @@ namespace ProtonDB.Server {
                     Database: [Meta.defaultDatabase]
                 );
 
-                HashMap userConfig = Load(Meta.UserConfigFile);
+                HashMap userConfig = Load(Meta.ProfileConfig);
                 userConfig.Add(guestName, guestInfo);
-                Save(Meta.UserConfigFile, userConfig);
+                Save(Meta.ProfileConfig, userConfig);
 
                 return new Profile {
                     profileName = guestName,
@@ -200,9 +178,9 @@ namespace ProtonDB.Server {
                     Database: [.. Meta.GetDatabaseList().Keys]
                 );
 
-                HashMap userConfig = Load(Meta.UserConfigFile);
+                HashMap userConfig = Load(Meta.ProfileConfig);
                 userConfig.Add(adminName, adminInfo);
-                Save(Meta.UserConfigFile, userConfig);
+                Save(Meta.ProfileConfig, userConfig);
 
                 return new Profile {
                     profileName = adminName,
@@ -215,12 +193,12 @@ namespace ProtonDB.Server {
                     return true;
                 }
 
-                var userInfo = Load(Token._profileConfig);
+                var userInfo = Load(Meta.ProfileConfig);
                 if (userInfo.TryGetValue(Meta.CurrentUser, out var info)) {
                     if (info == null) {
                         userInfo.Remove(Meta.CurrentUser);
                         Meta.CurrentProfile = Guest();
-                        Save(Token._profileConfig, userInfo);
+                        Save(Meta.ProfileConfig, userInfo);
                         return false;
                     }
                     return info.Database.Contains(database);
@@ -228,54 +206,9 @@ namespace ProtonDB.Server {
                 return false;
             }
 
-            public static string[] GrantAccess(string userName, string database) {
-                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(database)) {
-                    return ["Username or database cannot be empty"];
-                }
-                var userConfig = Load(Token._profileConfig);
-                if (userConfig.TryGetValue(userName, out ProfileInfo? profile)) {
-                    if (Meta.CurrentPrivilege == Privilege.admin || Meta.CurrentUserDatabases.Contains(database)) {
-                        if (profile == null) {
-                            return ["Profile not found"];
-                        }
-                        if (!profile.Database.Contains(database)) {
-                            profile.Database.Add(database);
-                            Save(Token._profileConfig, userConfig);
-                            return [$"Access granted to {database} for {userName}"];
-                        } else {
-                            return [$"{userName} already has access to {database}"];
-                        }
-                    } else {
-                        return ["You do not have permission to grant access"];
-                    }
-                } else {
-                    return ["Profile not found"];
-                }
-            }
-
-            public static string[] RevokeAccess(string userName, string database) {
-                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(database)) {
-                    return ["Username or database cannot be empty"];
-                }
-                var userConfig = Load(Token._profileConfig);
-                if (userConfig.TryGetValue(userName, out ProfileInfo? profile)) {
-                    if (profile == null) {
-                        return ["Profile not found"];
-                    }
-                    if (profile.Database.Contains(database)) {
-                        profile.Database.Remove(database);
-                        Save(Token._profileConfig, userConfig);
-                        return [$"Access revoked from {database} for {userName}"];
-                    } else {
-                        return [$"{userName} does not have access to {database}"];
-                    }
-                } else {
-                    return ["Profile not found"];
-                }
-            }
 
             public static bool UpdateAdminDatabase() {
-                var config = Load(Token._profileConfig);
+                var config = Load(Meta.ProfileConfig);
                 List<string> databases = [.. Meta.GetDatabaseList().Keys];
                 foreach ( var info in config.UserNames) {
                     if (config.TryGetValue(info, out ProfileInfo? profile)) {
@@ -288,6 +221,7 @@ namespace ProtonDB.Server {
                                 databases
                             );
                             config.Set(info, temp);
+                            Save(Meta.ProfileConfig, config);
                             return true;
                         }
                     }
@@ -295,35 +229,98 @@ namespace ProtonDB.Server {
                 return false;
             }
 
-            private static bool ValidateProfile(string userName, string password) {
-                var profiles = Load(Token._profileConfig);
-                if (profiles.TryGetValue(userName, out var info)) {
-                    if (info == null) {
-                        return false;
+            public static bool UpdateDatabase(string databaseName, Action action) {
+                var config = Load(Meta.ProfileConfig);
+                if (config.TryGetValue(Meta.CurrentUser, out ProfileInfo? profile)) {
+                    if (profile != null && profile.Privilege == Privilege.admin) {
+                        if (action == Action.add && !profile.Database.Contains(databaseName)) {
+                            profile.Database.Add(databaseName);
+                        } else if (action == Action.drop && profile.Database.Contains(databaseName)) {
+                            profile.Database.Remove(databaseName);
+                        } else {
+                            return false;
+                        }
+                        profile.Database.Add(databaseName);
+                        return Save(Meta.ProfileConfig, config);
                     }
-                    string checksum = GenerateChecksum(userName, password, info.Privilege, info.CreatedAt, info.Salt);
-                    return checksum.Equals(info.Checksum);
                 }
                 return false;
             }
+            private static string[] GrantAccess(string userName, string database) {
+                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(database)) {
+                    return ["Username or database cannot be empty"];
+                }
+                var userConfig = Load(Meta.ProfileConfig);
+                if (userConfig.TryGetValue(userName, out ProfileInfo? profile) && profile != null) {
+                    if (Meta.CurrentPrivilege == Privilege.admin || Meta.CurrentUserDatabases.Contains(database)) {
+                        if (!profile.Database.Contains(database)) {
+                            profile.Database.Add(database);
+                            Save(Meta.ProfileConfig, userConfig);
+                            return [$"Access granted to {database} for {userName}"];
+                        } else {
+                            return [$"{userName} already has access to {database}"];
+                        }
+                    } else {
+                        return ["You do not have permission to grant access"];
+                    }
+                } else {
+                    return ["Profile not found"];
+                }
+            }
+            private static string[] RevokeAccess(string userName, string database) {
+                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(database)) {
+                    return ["Username or database cannot be empty"];
+                }
+
+                var userConfig = Load(Meta.ProfileConfig);
+                if (!userConfig.TryGetValue(userName, out var profile) || profile == null)
+                    return ["Profile not found"];
+
+                if (profile.Database.Remove(database)) {
+                    Save(Meta.ProfileConfig, userConfig);
+                    return [$"Access revoked from {database} for {userName}"];
+                } else {
+                    return [$"{userName} does not have access to {database}"];
+                }
+            }
+
+            private static string[]? SplitArgs(string argument, int required = 1, int max = 2) {
+                var args = argument.Split(',').Select(s => s.Trim().Trim('"')).ToArray();
+                if (args.Length < required || args.Length > max) return null;
+                return args;
+            }
+
+            private static bool ValidateProfile(string userName, string password) {
+                Terminal.Log($"Validating profile for user: {userName}");
+                var config = Load(Meta.ProfileConfig);
+                foreach (var name in config.UserNames) {
+                    Terminal.Log($"Checking profile for user: {name}");
+                }
+                if (!config.TryGetValue(userName, out var info) || info == null) return false;
+                Terminal.Log($"Validating profile for user: {userName}, privilege: {info.Privilege}, createdAt: {info.CreatedAt}");
+                string checksum = GenerateChecksum(userName, password, info.Privilege, info.CreatedAt, info.Salt);
+                return checksum.Equals(info.Checksum);
+            }
 
             private static HashMap Load(string filePath) {
+                HashMap hashMap = new();
                 if (!File.Exists(filePath)) {
-                    return new();
+                    if (!File.Exists(filePath)) {
+                        File.WriteAllText(filePath, "{}");
+                        return new();
+                    }
                 }
 
                 var dict = JsonConvert.DeserializeObject<Dictionary<string, ProfileInfo>>(File.ReadAllText(filePath));
                 if (dict == null) {
                     return new();
                 }
-                HashMap hashMap = new();
                 foreach (var kvp in dict) {
                     if (kvp.Value != null) {
                         hashMap.Add(kvp.Key, kvp.Value);
                     }
                 }
                 return hashMap;
-
             }
 
             private static bool Save(string filePath, HashMap hashMap) {
@@ -337,12 +334,15 @@ namespace ProtonDB.Server {
                         }
                     }
                 }
-                File.WriteAllText(filePath, JsonConvert.SerializeObject(dict, Formatting.Indented));
-                return true;
+                try {
+                    File.WriteAllText(filePath, JsonConvert.SerializeObject(dict, Formatting.Indented));
+                    return true;
+                } catch { return false; }
             }
 
             private static string GenerateChecksum(string userName, string password, string privilege, string createdAt, string salt) {
-                string key = $"ProtonDB-{privilege}-{userName}-{password}-{createdAt}-{salt}";
+                Terminal.Log($"Generating checksum for user: {userName}, privilege: {privilege}, createdAt: {createdAt}");
+                string key = $"{Storage._protonDB}-{privilege}-{userName}-{password}-{createdAt}-{salt}";
                 return Hash.Compute(key, Algorithm.SHA256, Case.Lower);
             }
         }

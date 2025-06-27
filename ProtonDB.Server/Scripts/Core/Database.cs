@@ -2,13 +2,9 @@
     namespace Core {
         public static class Database {
             public static string[] Use(string name) {
-                if (string.IsNullOrEmpty(name)) {
-                    return ["Database name cannot be empty"];
-                }
-
-                if (name == Meta.CurrentDatabase) {
-                    return [$"Already using database '{name}'"];
-                }
+                if (string.IsNullOrEmpty(name))     return ["Database name cannot be empty"];
+                if (name == Meta.CurrentDatabase)   return [$"Already using database '{name}'"];
+                if (!Profiles.ValidateAccess(name)) return ["Access denied to the database"];
 
                 if (!Meta.GetDatabaseList().ContainsKey(name)) {
                     return Linker(name, StorageEngine.create_database, $"Switched to database: {name}");
@@ -19,7 +15,12 @@
             }
 
 
-            public static string[] Create(string name) => Linker(name, StorageEngine.create_database);
+            public static string[] Create(string name) {
+                string[] result = Linker(name, StorageEngine.create_database);
+                Profiles.UpdateDatabase(name, Action.add);
+                Profiles.UpdateAdminDatabase();
+                return result; 
+            }
 
             public static string[] Drop(string name) {
                 if ((name == null && Meta.CurrentDatabase == Meta.defaultDatabase) || name == Meta.defaultDatabase) {
@@ -27,10 +28,13 @@
                 }
 
                 if (name == null || name == Meta.CurrentDatabase) {
+                    Profiles.UpdateDatabase(Meta.CurrentDatabase, Action.drop);
                     return Linker(Meta.CurrentDatabase, StorageEngine.drop_database);
                 }
-
-                return Linker(name, StorageEngine.drop_database);
+                string[] result = Linker(name, StorageEngine.drop_database);
+                Profiles.UpdateDatabase(Meta.CurrentDatabase, Action.drop);
+                Profiles.UpdateAdminDatabase();
+                return result;
             }
 
             private static string[] Linker(string name, Func<QueryConfig, Output> func, string? message = null) {

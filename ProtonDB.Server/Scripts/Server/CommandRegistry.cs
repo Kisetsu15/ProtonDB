@@ -1,12 +1,15 @@
+using ProtonDB.Server.Core;
+
 namespace ProtonDB.Server {
 
     public class CommandRegistry {
         private static readonly Dictionary<string, Func<IServerCommand>> commands = new() {
-            { "DEBUG ON", () => new DebugCommand(true) },
-            { "DEBUG OFF", () => new DebugCommand(false) },
-            { "FETCH", () => new FetchCommand() },
-            { "QUERY", () => new QueryCommand() },
-            { "QUIT", () => new QuitCommand() }
+            { Command.login, () => new LoginCommand() },
+            { Command.debugOn, () => new DebugCommand(true) },
+            { Command.debugOff, () => new DebugCommand(false) },
+            { Command.fetch, () => new FetchCommand() },
+            { Command.query, () => new QueryCommand() },
+            { Command.quit, () => new QuitCommand() }
         };
 
         public static IServerCommand? Resolve(string input) {

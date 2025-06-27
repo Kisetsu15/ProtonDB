@@ -7,8 +7,8 @@ namespace ProtonDB.Server {
 
         public static class Meta {
             private static string currentDatabase = Token.proton;
-            private static string DatabaseMetaFile => Path.Combine(DatabaseDirectory, Token._databaseMeta);
-            private static Profile currentProfile = Profiles.Guest();
+            private static string DatabaseMetaFile => Path.Combine(DatabaseDirectory, Storage._databaseMeta);
+            private static Profile currentProfile = new();
 
             public static Profile CurrentProfile {
                 get => currentProfile;
@@ -18,17 +18,17 @@ namespace ProtonDB.Server {
             public static string CurrentUser => currentProfile.profileName;
             public static string CurrentPrivilege => currentProfile.profileInfo.Privilege;
             public static string CurrentUserDatabases => currentDatabase;
-            public static string ProtonDBDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Token._protonDB);
-            public static string CoreDirectory => Token._coreDir;
+            public static string ProtonDBDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Storage._protonDB);
+            public static string CoreDirectory => Storage._coreDir;
             public static string DatabaseDirectory => Path.Combine(ProtonDBDirectory, Token._database);
-            public static string AuthDirectory => Path.Combine(CoreDirectory, Token._authDir);
-            public static string UserConfigFile => Path.Combine(AuthDirectory, Token._profileConfig);
+            public static string AuthDirectory => Path.Combine(CoreDirectory, Storage._authDir);
+            public static string ProfileConfig => Path.Combine(AuthDirectory, Storage._profileConfig);
 
             public const string defaultDatabase = Token.proton;
             public const int maxMessageLength = 384;
             public static string CurrentDatabase { get => currentDatabase; set => currentDatabase = value; }
             public static Dictionary<string, string> GetDatabaseList() => (!File.Exists(DatabaseMetaFile)) ?
-                [] : Json.Load<string>(Path.Combine(DatabaseDirectory, Token._databaseMeta));
+                [] : Json.Load<string>(Path.Combine(DatabaseDirectory, Storage._databaseMeta));
 
 
             public static void Initialize() {

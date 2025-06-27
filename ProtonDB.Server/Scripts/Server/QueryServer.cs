@@ -1,3 +1,5 @@
+using Kisetsu.Utils;
+using ProtonDB.Server.Core;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
@@ -41,6 +43,14 @@ namespace ProtonDB.Server {
                     if (input == null) break;
                     var request = JsonSerializer.Deserialize<Request>(input!); 
                     if (request == null) continue;
+                    Terminal.Log(request.Command!);
+                    if (!session.IsAuthenticated && request.Command?.ToUpperInvariant() != Command.login) {
+                        await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {
+                            Status = "error",
+                            Message = "You must log in before issuing other commands."
+                        }));
+                        continue;
+                    }
 
                     var command = CommandRegistry.Resolve(request.Command?.ToUpperInvariant()!);
                     if (command != null) {
