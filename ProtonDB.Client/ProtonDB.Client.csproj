@@ -4,11 +4,36 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
+    <ApplicationIcon>protondb_icon.ico</ApplicationIcon>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>ProtonDB.Client</Title>
+    <Description>ProtonDB.Client is a lightweight .NET library that allows you to connect and interact with a ProtonDB server using simple query commands</Description>
+    <PackageReadmeFile>Client-README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Kisetsu15/ProtonDB</RepositoryUrl>
+    <PackageTags>NoSQL;Database;Json;DatabaseServer;ProtonDB</PackageTags>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <Authors>Dharshik</Authors>
+    <Company>Kisetsu Productions</Company>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kisetsu.Utils" Version="1.0.5" />
+    <Content Include="protondb_icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Document\Client-README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>
