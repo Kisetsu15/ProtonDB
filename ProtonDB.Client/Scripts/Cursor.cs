@@ -122,6 +122,18 @@ namespace ProtonDB.Client {
         }
 
         /// <summary>
+        /// Fetches details about the current profile.
+        /// </summary>
+        /// <returns>An array of result strings, or an empty array if no results.</returns>
+        public string[] Profile() {
+            var response = _session.ProfileAsync().GetAwaiter().GetResult();
+            if (response.Status != "ok") {
+                throw new Exception($"Profile command failed: {response.Message}");
+            }
+            return response.Result ?? [];
+        }
+
+        /// <summary>
         /// Quits the session and disposes resources.
         /// </summary>
         /// <returns>The quit response message.</returns>

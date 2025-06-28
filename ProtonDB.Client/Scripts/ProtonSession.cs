@@ -85,6 +85,12 @@ namespace ProtonDB.Client {
         public Task<ProtonResponse> LoginAsync(string? userName, string? password) => SendAsync("LOGIN", $"{userName},{password}");
 
         /// <summary>
+        /// Sends a profile command to retrieve results from the server asynchronously.
+        /// </summary>
+        /// <returns>A <see cref="ProtonResponse"/> containing the results of the profile.</returns>
+        public Task<ProtonResponse> ProfileAsync() => SendAsync("PROFILE");
+
+        /// <summary>
         /// Disposes the session, closing the underlying network resources.
         /// </summary>
         public void Dispose() {
