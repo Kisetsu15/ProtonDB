@@ -47,22 +47,8 @@ namespace ProtonDB.Shell {
                 return;
             }
 
-            string _host = Terminal.Input($"Host [{Connection.defaultHost}]: ");
-            if (string.IsNullOrWhiteSpace(_host)) {
-                _host = Connection.defaultHost;
-            }
-            string port = (Terminal.Input($"Port [{Connection.defaultPort}]: "));
-            int _port = string.IsNullOrWhiteSpace(port) ? Connection.defaultPort : int.TryParse(port, out int parsedPort) ? parsedPort : -1;
-            if (_port <= 0) {
-                _port = Connection.defaultPort;
-            }
-            string _username = Terminal.Input($"Username: ");
-            string _password = Terminal.Input($"Password: ");
-            if (string.IsNullOrWhiteSpace(_username) || string.IsNullOrWhiteSpace(_password)) {
-                Terminal.WriteLine("Username and password cannot be empty.", ConsoleColor.Red);
-                return;
-            }
-            Connection connection = Connection.Connect(_host, _port, _username, _password);
+            
+            Connection? connection = CreateConnection();
             if (connection == null) {
                 Terminal.WriteLine("Failed to connect to ProtonDB server. Please check your connection settings.", ConsoleColor.Red);
                 return;
@@ -71,10 +57,10 @@ namespace ProtonDB.Shell {
             Console.WriteLine();
 
             while (true) {
-                if(!PrintDetails(cursor.Profile())) break;
+                if(!PrintProfileDetails(cursor.Profile())) break;
 
                 string input = Terminal.Input(ConsoleColor.White, "$ ");
-                Console.WriteLine();
+               
                 var op = CommandExecutor(input);
                 if (op == Operation.End) break;
                 if (op == Operation.Skip) continue;
@@ -96,7 +82,25 @@ namespace ProtonDB.Shell {
             cursor.Quit();
         }
 
-        private static bool PrintDetails(string[] details) {
+        private static Connection? CreateConnection() {
+            string _host = Terminal.Input($"Host [{Connection.defaultHost}]: ");
+            if (string.IsNullOrWhiteSpace(_host)) _host = Connection.defaultHost;
+            string port = (Terminal.Input($"Port [{Connection.defaultPort}]: "));
+            int _port = string.IsNullOrWhiteSpace(port) ? Connection.defaultPort : int.TryParse(port, out int parsedPort) ? parsedPort : -1;
+            if (_port <= 0) _port = Connection.defaultPort;
+
+            string _username = Terminal.Input($"Username: ");
+            string _password = Terminal.Input($"Password: ");
+
+            if (string.IsNullOrWhiteSpace(_username) || string.IsNullOrWhiteSpace(_password)) {
+                Terminal.WriteLine("Username and password cannot be empty.", ConsoleColor.Red);
+                return null;
+            }
+
+            return Connection.Connect(_host, _port, _username, _password);
+        }
+
+        private static bool PrintProfileDetails(string[] details) {
             if (details == null || details.Length == 0) {
                 Terminal.WriteLine("Profile not found", ConsoleColor.Red);
                 return false;

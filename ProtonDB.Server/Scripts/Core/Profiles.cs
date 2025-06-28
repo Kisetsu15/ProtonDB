@@ -9,16 +9,17 @@ namespace ProtonDB.Server {
                 if (session.CurrentPrivilege != Privilege.admin) {                     
                     return ["Requires admin privilege"];
                 }
+
                 var arg = SplitArgs(argument, 2, 3);
                 if (arg == null) {
                      return ["Invalid Argument"];
                 }
 
-                string? userName = arg[0];
-                string? password = arg[1];
-                string? privilege = arg[2];
+                string userName = arg[0];
+                string password = arg[1];
+                string privilege = (arg.Length == 3) ? arg[2] : Privilege.user;
 
-                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(privilege)) {
+                if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password)) {
                     return ["Values cannot be empty"];
                 }
 
@@ -30,7 +31,7 @@ namespace ProtonDB.Server {
                     salt,
                     privilege,
                     createdAt,
-                    privilege == Privilege.admin ?[..Meta.GetDatabaseList().Keys] :[Meta.defaultDatabase]
+                    privilege.Equals(Privilege.admin) ? [..Meta.GetDatabaseList().Keys] : [Meta.defaultDatabase]
                 );
 
                 userConfig.Add(userName, profile);
@@ -254,8 +255,12 @@ namespace ProtonDB.Server {
             }
 
             private static string[]? SplitArgs(string argument, int required = 1, int max = 2) {
+                Terminal.Log($"{argument} {required} {max}");
                 var args = argument.Split(',').Select(s => s.Trim().Trim('"')).ToArray();
                 if (args.Length < required || args.Length > max) return null;
+                foreach (var arg in args) {
+                    Terminal.Log(arg);
+                }
                 return args;
             }
 
