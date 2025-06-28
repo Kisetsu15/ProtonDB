@@ -6,10 +6,9 @@ namespace ProtonDB.Server {
         public async Task ExecuteAsync(QuerySession session, StreamWriter writer, Request request) {
             await writer.WriteLineAsync(JsonSerializer.Serialize(new Response { 
                 Status = "ok",
-                Message = "Goodbye." 
+                Message = "Goodbye" 
             }));
             session.ShouldExit = true;
         }
     }
-
 }

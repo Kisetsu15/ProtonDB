@@ -26,6 +26,7 @@ namespace ProtonDB.Server {
             public const string query = "QUERY";
             public const string quit = "QUIT";
             public const string debug = "DEBUG";
+            public const string profile = "PROFILE";
         }
 
         public static class Entity {
@@ -43,7 +44,6 @@ namespace ProtonDB.Server {
         }
 
         public static class Privilege {
-            public const string guest = "guest";
             public const string user = "user";
             public const string admin = "admin";
         }

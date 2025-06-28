@@ -27,7 +27,7 @@ namespace ProtonDB.Server {
             string user = args[0].Trim();
             string pass = args[1].Trim();
 
-            bool success = Profiles.Login(user,pass);
+            bool success = Profiles.Login(user,pass, session);
 
             session.IsAuthenticated = success;
             await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {

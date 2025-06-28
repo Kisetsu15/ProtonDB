@@ -8,6 +8,7 @@ namespace ProtonDB.Server {
             { Command.debug, () => new DebugCommand() },
             { Command.fetch, () => new FetchCommand() },
             { Command.query, () => new QueryCommand() },
+            { Command.profile, () => new ProfileCommand() },
             { Command.quit, () => new QuitCommand() }
         };
 

@@ -7,14 +7,14 @@ namespace ProtonDB.Server {
     namespace Core {
 
         public static class Document {
-            public static string[] Insert(Query query) {
+            public static string[] Insert(Query query, QuerySession session) {
                 if (query.Argument == null) {
                     return ["Insert requires a document argument"];
                 }
 
                 Result result = StorageEngine.Link(
                     new QueryConfig {
-                        databaseName = Meta.CurrentDatabase,
+                        databaseName = session.CurrentDatabase,
                         collectionName = query.Object,
                         data = query.Argument
                     },
@@ -24,12 +24,12 @@ namespace ProtonDB.Server {
                 return result.GetOutput();
             }
 
-            public static string[] Remove(Query query) {
+            public static string[] Remove(Query query, QuerySession session) {
                 Result result = new();
                 if (query.Argument == null) {
                     result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = Meta.CurrentDatabase,
+                            databaseName = session.CurrentDatabase,
                             collectionName = query.Object,
                         },
                         StorageEngine.remove_all_documents
@@ -44,7 +44,7 @@ namespace ProtonDB.Server {
 
                 result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = Meta.CurrentDatabase,
+                            databaseName = session.CurrentDatabase,
                             collectionName = query.Object,
                             key = condition.Value.key,
                             value = condition.Value.value,
@@ -55,12 +55,12 @@ namespace ProtonDB.Server {
                 return result.GetOutput();
             }
 
-            public static string[] Print(Query query) {
+            public static string[] Print(Query query, QuerySession session) {
                 Result result = new();
                 if (query.Argument == null) {
                     result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = Meta.CurrentDatabase,
+                            databaseName = session.CurrentDatabase,
                             collectionName = query.Object
                         },
                         StorageEngine.print_all_documents
@@ -75,7 +75,7 @@ namespace ProtonDB.Server {
 
                 result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = Meta.CurrentDatabase,
+                            databaseName = session.CurrentDatabase,
                             collectionName = query.Object,
                             key = condition.Value.key,
                             value = condition.Value.value,
@@ -86,7 +86,7 @@ namespace ProtonDB.Server {
                 return result.GetOutput();
             }
 
-            public static string[] Update(Query query) {
+            public static string[] Update(Query query, QuerySession session) {
                 if (query.Argument == null) {
                     return ["Update requires a document argument"];
                 }
@@ -103,7 +103,7 @@ namespace ProtonDB.Server {
                 if (component.Value.condition == null) {
                     result = StorageEngine.Link(
                         new QueryConfig {
-                            databaseName = Meta.CurrentDatabase,
+                            databaseName = session.CurrentDatabase,
                             collectionName = query.Object,
                             data = data,
                             action = action
@@ -119,7 +119,7 @@ namespace ProtonDB.Server {
 
                 result = StorageEngine.Link(
                     new QueryConfig {
-                        databaseName = Meta.CurrentDatabase,
+                        databaseName = session.CurrentDatabase,
                         collectionName = query.Object,
                         key = condition.Value.key,
                         value = condition.Value.value,

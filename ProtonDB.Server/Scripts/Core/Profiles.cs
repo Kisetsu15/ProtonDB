@@ -5,8 +5,8 @@ namespace ProtonDB.Server {
     namespace Core {
         public class Profiles {
 
-            public static string[] Create(string argument) { 
-                if (Meta.CurrentPrivilege != Privilege.admin) {                     
+            public static string[] Create(string argument, QuerySession session) { 
+                if (session.CurrentPrivilege != Privilege.admin) {                     
                     return ["Requires admin privilege"];
                 }
                 var arg = SplitArgs(argument, 2, 3);
@@ -38,17 +38,15 @@ namespace ProtonDB.Server {
                 return [$"Profile {privilege} '{userName}' created"];
             }
 
+            public static string[] Delete(string userName, QuerySession session) {
 
-
-            public static string[] Delete(string userName) {
-
-                if (Meta.CurrentPrivilege != Privilege.admin) {
+                if (session.CurrentPrivilege != Privilege.admin) {
                     return ["Requires admin privilege"];
                 }
                 if (string.IsNullOrWhiteSpace(userName)) {
                     return ["Username cannot be empty"];
                 }
-                if (userName.Equals(Meta.CurrentUser, StringComparison.OrdinalIgnoreCase)) {
+                if (userName.Equals(session.CurrentUser, StringComparison.OrdinalIgnoreCase)) {
                     return ["Cannot delete the current profile"];
                 }
                 var userConfig = Load(Meta.ProfileConfig);
@@ -67,12 +65,12 @@ namespace ProtonDB.Server {
             }
 
 
-            public static bool Login(string userName, string password) {
+            public static bool Login(string userName, string password, QuerySession session) {
                 if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password)) return false;
                 if (ValidateProfile(userName, password)) {
                     ProfileInfo? profileInfo = Load(Meta.ProfileConfig)[userName];
                     if (profileInfo == null) return false;
-                    Meta.CurrentProfile = new Profile {
+                    session.CurrentProfile = new Profile {
                         profileName = userName,
                         profileInfo = profileInfo
                     };
@@ -82,8 +80,8 @@ namespace ProtonDB.Server {
                 return false;
             }
 
-            public static string[] List() {
-                if (Meta.CurrentPrivilege != Privilege.admin) {
+            public static string[] List(QuerySession session) {
+                if (session.CurrentPrivilege != Privilege.admin) {
                     return ["Requires admin privilege"];
                 }
                 var userConfig = Load(Meta.ProfileConfig);
@@ -101,7 +99,7 @@ namespace ProtonDB.Server {
                 return [.. profiles];
             }
 
-            public static string[] Grant(string Argument) {
+            public static string[] Grant(string Argument, QuerySession session) {
                 var arg = SplitArgs(Argument);
                 if (arg == null) {
                     return ["Invalid Argument"];
@@ -109,59 +107,29 @@ namespace ProtonDB.Server {
                 string? userName = arg[0];
                 string? database = arg[1];
 
-                if (Meta.CurrentPrivilege == Privilege.guest) {
-                    return ["Guest cannot grant access"];
-                }
                 if (string.IsNullOrWhiteSpace(userName)) {
                     return ["Username cannot be empty"];
                 }
                 if (string.IsNullOrWhiteSpace(database)) {
-                    database = Meta.CurrentDatabase;
+                    database = session.CurrentDatabase;
                 }
-                return GrantAccess(userName, database);
+                return GrantAccess(userName, database, session);
             }
 
-            public static string[] Revoke(string Argument) {
+            public static string[] Revoke(string Argument, QuerySession session) {
                 var arg = SplitArgs(Argument);
                 if (arg == null) {
                     return ["Invalid Argument"];
                 }
                 string? userName = arg[0];
                 string? database = arg[1];
-                if (Meta.CurrentPrivilege == Privilege.guest) {
-                    return ["Guest cannot revoke access"];
-                }
                 if (string.IsNullOrWhiteSpace(userName)) {
                     return ["Username cannot be empty"];
                 }
                 if (string.IsNullOrWhiteSpace(database)) {
-                    database = Meta.CurrentDatabase;
+                    database = session.CurrentDatabase;
                 }
-                return RevokeAccess(userName, database);
-            }
-
-
-            public static Profile Guest() {
-                const string password = "welcome";
-                string guestName = AES.GenerateSalt();
-                string salt = AES.GenerateSalt();
-                string createdAt = DateTime.UtcNow.ToString("o");
-                ProfileInfo guestInfo = new(
-                    Checksum: GenerateChecksum(guestName, password, Privilege.guest, createdAt, salt),
-                    Salt: salt,
-                    Privilege: Privilege.guest,
-                    CreatedAt: createdAt,
-                    Database: [Meta.defaultDatabase]
-                );
-
-                HashMap userConfig = Load(Meta.ProfileConfig);
-                userConfig.Add(guestName, guestInfo);
-                Save(Meta.ProfileConfig, userConfig);
-
-                return new Profile {
-                    profileName = guestName,
-                    profileInfo = guestInfo
-                };
+                return RevokeAccess(userName, database, session);
             }
 
             public static Profile Admin(string adminName, string password) {
@@ -185,16 +153,16 @@ namespace ProtonDB.Server {
                 };
             }
 
-            public static bool ValidateAccess(string database) {
-                if (Meta.CurrentPrivilege == Privilege.admin) {
+            public static bool ValidateAccess(string database, QuerySession session) {
+                if (session.CurrentPrivilege == Privilege.admin) {
                     return true;
                 }
 
                 var userInfo = Load(Meta.ProfileConfig);
-                if (userInfo.TryGetValue(Meta.CurrentUser, out var info)) {
+                if (userInfo.TryGetValue(session.CurrentUser, out var info)) {
                     if (info == null) {
-                        userInfo.Remove(Meta.CurrentUser);
-                        Meta.CurrentProfile = Guest();
+                        userInfo.Remove(session.CurrentUser);
+                        session.CurrentProfile = new();
                         Save(Meta.ProfileConfig, userInfo);
                         return false;
                     }
@@ -226,9 +194,9 @@ namespace ProtonDB.Server {
                 return false;
             }
 
-            public static bool UpdateDatabase(string databaseName, Action action) {
+            public static bool UpdateDatabase(string databaseName, Action action, QuerySession session) {
                 var config = Load(Meta.ProfileConfig);
-                if (config.TryGetValue(Meta.CurrentUser, out ProfileInfo? profile)) {
+                if (config.TryGetValue(session.CurrentUser, out ProfileInfo? profile)) {
                     if (profile != null && profile.Privilege == Privilege.admin) {
                         if (action == Action.add && !profile.Database.Contains(databaseName)) {
                             profile.Database.Add(databaseName);
@@ -243,13 +211,14 @@ namespace ProtonDB.Server {
                 }
                 return false;
             }
-            private static string[] GrantAccess(string userName, string database) {
+
+            private static string[] GrantAccess(string userName, string database, QuerySession session) {
                 if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(database)) {
                     return ["Username or database cannot be empty"];
                 }
                 var userConfig = Load(Meta.ProfileConfig);
                 if (userConfig.TryGetValue(userName, out ProfileInfo? profile) && profile != null) {
-                    if (Meta.CurrentPrivilege == Privilege.admin || Meta.CurrentUserDatabases.Contains(database)) {
+                    if (session.CurrentPrivilege == Privilege.admin || session.CurrentUserDatabases.Contains(database)) {
                         if (!profile.Database.Contains(database)) {
                             profile.Database.Add(database);
                             Save(Meta.ProfileConfig, userConfig);
@@ -264,7 +233,7 @@ namespace ProtonDB.Server {
                     return ["Profile not found"];
                 }
             }
-            private static string[] RevokeAccess(string userName, string database) {
+            private static string[] RevokeAccess(string userName, string database, QuerySession session) {
                 if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(database)) {
                     return ["Username or database cannot be empty"];
                 }
@@ -272,12 +241,15 @@ namespace ProtonDB.Server {
                 var userConfig = Load(Meta.ProfileConfig);
                 if (!userConfig.TryGetValue(userName, out var profile) || profile == null)
                     return ["Profile not found"];
-
-                if (profile.Database.Remove(database)) {
-                    Save(Meta.ProfileConfig, userConfig);
-                    return [$"Access revoked from {database} for {userName}"];
+                if (session.CurrentPrivilege == Privilege.admin || session.CurrentUserDatabases.Contains(database)) {
+                    if (profile.Database.Remove(database)) {
+                        Save(Meta.ProfileConfig, userConfig);
+                        return [$"Access revoked from {database} for {userName}"];
+                    } else {
+                        return [$"{userName} does not have access to {database}"];
+                    }
                 } else {
-                    return [$"{userName} does not have access to {database}"];
+                    return ["You do not have permission to revoke access"];
                 }
             }
 

@@ -2,14 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "StorageEngine.h"
-#include "DatabaseUtils.h"
 
 static char filePath[MAX_PATH_LEN];
 static char metaFile[MAX_PATH_LEN];
 static char databaseMeta[MAX_PATH_LEN];
 static char error[MAX_ERROR_LEN];
 
-EXPORT Output create_database(const QueryConfig config) {
+export Output create_database(const QueryConfig config) {
     Output output = NEW_OUTPUT;
 
     if (strlen(config.databaseName) + 4 >= sizeof(filePath)) {
@@ -34,7 +33,7 @@ EXPORT Output create_database(const QueryConfig config) {
     return output;
 }
 
-EXPORT Output drop_database(const QueryConfig config) {
+export Output drop_database(const QueryConfig config) {
     Output output = NEW_OUTPUT;
 
     if (!check_database(config.databaseName)) {
@@ -56,7 +55,7 @@ EXPORT Output drop_database(const QueryConfig config) {
     return output;
 }
 
-EXPORT ArrayOut list_database() {
+export ArrayOut list_database() {
     ArrayOut arrayOut = NEW_ARRAY_OUT;
     get_database_meta(metaFile);
     char** _list = NULL;
@@ -68,7 +67,7 @@ EXPORT ArrayOut list_database() {
     return arrayOut;
 }
 
-EXPORT Output create_collection(const QueryConfig config) {
+export Output create_collection(const QueryConfig config) {
     Output output = NEW_OUTPUT;
 
     if (!check_database(config.databaseName)) {
@@ -102,7 +101,7 @@ EXPORT Output create_collection(const QueryConfig config) {
     return output;
 }
 
-EXPORT Output drop_collection(const QueryConfig config) {
+export Output drop_collection(const QueryConfig config) {
     Output output = NEW_OUTPUT;
 
     if (!check_database(config.databaseName)) {
@@ -122,7 +121,7 @@ EXPORT Output drop_collection(const QueryConfig config) {
     return output;
 }
 
-EXPORT ArrayOut list_collection(const QueryConfig config) {
+export ArrayOut list_collection(const QueryConfig config) {
     ArrayOut arrayOut = NEW_ARRAY_OUT;
 
     get_col_meta(filePath, config.databaseName);
@@ -135,7 +134,7 @@ EXPORT ArrayOut list_collection(const QueryConfig config) {
     return arrayOut;
 }
 
-EXPORT Output insert_document(const QueryConfig config) {
+export Output insert_document(const QueryConfig config) {
     Output output = NEW_OUTPUT;
 
     get_col_file(filePath, config.databaseName, config.collectionName);
@@ -188,12 +187,12 @@ EXPORT Output insert_document(const QueryConfig config) {
 }
 
 
-EXPORT ArrayOut print_all_documents(const QueryConfig config) {
+export ArrayOut print_all_documents(const QueryConfig config) {
     return print_documents(config);
 }
 
 
-EXPORT ArrayOut print_documents(const QueryConfig config) {
+export ArrayOut print_documents(const QueryConfig config) {
     ArrayOut arrayOut = NEW_ARRAY_OUT;
     get_col_file(filePath, config.databaseName, config.collectionName);
     cJSON* _collection = load_binary(filePath, error);
@@ -218,7 +217,7 @@ EXPORT ArrayOut print_documents(const QueryConfig config) {
     return arrayOut;
 }
 
-EXPORT Output remove_documents(const QueryConfig config) {
+export Output remove_documents(const QueryConfig config) {
     Output output = NEW_OUTPUT;
     get_col_file(filePath, config.databaseName, config.collectionName);
     cJSON* _collection = load_binary(filePath, error);
@@ -243,11 +242,11 @@ EXPORT Output remove_documents(const QueryConfig config) {
     return output;
 }
 
-EXPORT Output remove_all_documents(const QueryConfig config) {
+export Output remove_all_documents(const QueryConfig config) {
     return remove_documents(config);
 }
 
-EXPORT Output update_documents(const QueryConfig config) {
+export Output update_documents(const QueryConfig config) {
     Output output = NEW_OUTPUT;
 
 
@@ -287,11 +286,11 @@ EXPORT Output update_documents(const QueryConfig config) {
 }
 
 
-EXPORT Output update_all_documents(const QueryConfig config) {
+export Output update_all_documents(const QueryConfig config) {
     return update_documents(config);
 }
 
-EXPORT void free_list(char** list, const int size) {
+export void free_list(char** list, const int size) {
     for (int i = 0; i < size; i++) {
         free(list[i]);
     }

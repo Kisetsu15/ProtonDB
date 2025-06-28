@@ -1,22 +1,21 @@
-﻿using Kisetsu.Utils;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace ProtonDB.Server {
     namespace Core {
         public static class Parser {
             public record Query(string Object, string Operation, string? Argument);
 
-            public static string[] Execute(string input) {
+            public static string[] Execute(string input, QuerySession s) {
                 var query = Parse(input);
                 if (query == null) {
                     return ["Invalid Query"];
                 }
 
                 return query.Object switch {
-                    Token._database => ExecuteDatabaseCommand(query),
-                    Token.collection => ExecuteCollectionCommand(query),
-                    Token.profile => ExecuteProfileCommand(query),
-                    _ => ExecuteDocumentCommand(query)
+                    Token._database => ExecuteDatabaseCommand(query, s),
+                    Token.collection => ExecuteCollectionCommand(query, s),
+                    Token.profile => ExecuteProfileCommand(query, s),
+                    _ => ExecuteDocumentCommand(query, s)
                 };
             }
 
@@ -31,41 +30,41 @@ namespace ProtonDB.Server {
                 );
             }
 
-            private static string[] ExecuteDatabaseCommand(Query query) {
+            private static string[] ExecuteDatabaseCommand(Query query, QuerySession s) {
                 return query.Operation switch {
-                    Token.use => Database.Use(query.Argument!),
-                    Token.create => Database.Create(query.Argument!),
-                    Token.drop => Database.Drop(query.Argument!),
+                    Token.use => Database.Use(query.Argument!, s),
+                    Token.create => Database.Create(query.Argument!, s),
+                    Token.drop => Database.Drop(query.Argument!, s),
                     Token.list => Database.List(),
                     _ => ["Invalid database command"]
                 };
             }
 
-            private static string[] ExecuteCollectionCommand(Query query) {
+            private static string[] ExecuteCollectionCommand(Query query, QuerySession s) {
                 return query.Operation switch {
-                    Token.create => Collection.Create(query.Argument!),
-                    Token.drop => Collection.Drop(query.Argument!),
-                    Token.list => Collection.List(query.Argument!),
+                    Token.create => Collection.Create(query.Argument!, s),
+                    Token.drop => Collection.Drop(query.Argument!, s),
+                    Token.list => Collection.List(query.Argument!, s),
                     _ => ["Invalid collection command"]
                 };
             }
-            private static string[] ExecuteDocumentCommand(Query query) {
+            private static string[] ExecuteDocumentCommand(Query query, QuerySession s) {
                 return query.Operation switch {
-                    Token.insert => Document.Insert(query),
-                    Token.remove => Document.Remove(query),
-                    Token.update => Document.Update(query),
-                    Token.print => Document.Print(query),
+                    Token.insert => Document.Insert(query, s),
+                    Token.remove => Document.Remove(query, s),
+                    Token.update => Document.Update(query, s),
+                    Token.print => Document.Print(query, s),
                     _ => ["Invalid document command"]
                 };
             }
 
-            private static string[] ExecuteProfileCommand(Query query) {
+            private static string[] ExecuteProfileCommand(Query query, QuerySession s) {
                 return query.Operation switch {
-                    Token.create => Profiles.Create(query.Argument!),
-                    Token.delete => Profiles.Delete(query.Argument!),
-                    Token.grant => Profiles.Grant(query.Argument!),
-                    Token.revoke => Profiles.Revoke(query.Argument!),
-                    Token.list => Profiles.List(),
+                    Token.create => Profiles.Create(query.Argument!, s),
+                    Token.delete => Profiles.Delete(query.Argument!, s),
+                    Token.grant => Profiles.Grant(query.Argument!, s),
+                    Token.revoke => Profiles.Revoke(query.Argument!, s),
+                    Token.list => Profiles.List(s),
                     _ => ["Invalid profile command"]
                 };
             }
