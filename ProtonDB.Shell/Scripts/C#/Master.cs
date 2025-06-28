@@ -1,7 +1,8 @@
 ﻿using Kisetsu.Utils;
 using System.Text;
+using ProtonDB.Client;
 
-namespace ProtonDB.CLI {
+namespace ProtonDB.Shell {
 
 
     public static class Master {
@@ -22,11 +23,18 @@ namespace ProtonDB.CLI {
             [Token._help]    = () => { Commands.Help();    return Operation.Skip; },
             [Token.help]     = () => { Commands.Help();    return Operation.Skip; },
             [Token._version] = () => { Commands.Version(); return Operation.Skip; },
-            [Token.version]  = () => { Commands.Version(); return Operation.Skip; }
+            [Token.version]  = () => { Commands.Version(); return Operation.Skip; },
+            ["test"] = () => {
+                Terminal.WriteLine("Testing mode is not implemented yet.");
+                return Operation.Skip;
+            },
+            ["reload"] = () => {
+                ProtonMeta.Loading();
+                return Operation.Skip;
+            }
         };
 
         public static void Main(string[] args) {
-            ProtonMeta.Initialize();
             if (args.Length > MAX_ARGUMENT) {
                 Terminal.WriteLine("ProtonDB takes only one argument. Usage: ProtonDB <command>");
                 return;
@@ -39,20 +47,75 @@ namespace ProtonDB.CLI {
                 return;
             }
 
+            string _host = Terminal.Input($"Host [{Connection.defaultHost}]: ");
+            if (string.IsNullOrWhiteSpace(_host)) {
+                _host = Connection.defaultHost;
+            }
+            string port = (Terminal.Input($"Port [{Connection.defaultPort}]: "));
+            int _port = string.IsNullOrWhiteSpace(port) ? Connection.defaultPort : int.TryParse(port, out int parsedPort) ? parsedPort : -1;
+            if (_port <= 0) {
+                _port = Connection.defaultPort;
+            }
+            string _username = Terminal.Input($"Username: ");
+            string _password = Terminal.Input($"Password: ");
+            if (string.IsNullOrWhiteSpace(_username) || string.IsNullOrWhiteSpace(_password)) {
+                Terminal.WriteLine("Username and password cannot be empty.", ConsoleColor.Red);
+                return;
+            }
+            Connection connection = Connection.Connect(_host, _port, _username, _password);
+            if (connection == null) {
+                Terminal.WriteLine("Failed to connect to ProtonDB server. Please check your connection settings.", ConsoleColor.Red);
+                return;
+            }
+            Cursor cursor = new(connection);
+            Console.WriteLine();
+
             while (true) {
-                string input = Terminal.Input($"{ProtonMeta.CurrentDatabase}> ");
+                if(!PrintDetails(cursor.Profile())) break;
+
+                string input = Terminal.Input(ConsoleColor.White, "$ ");
+                Console.WriteLine();
                 var op = CommandExecutor(input);
                 if (op == Operation.End) break;
                 if (op == Operation.Skip) continue;
+
                 input = MultiLineParser(input);
-                Parser.Execute(input);
+                cursor.Query(input);
+
+                string[] output = cursor.FetchAll();
+                if (output.Length == 0) {
+                    Terminal.WriteLine("No results found.", ConsoleColor.Yellow);
+                } else {
+                    foreach (var line in output) {
+                        Terminal.WriteLine(line);
+                    }
+                }
+
+                Console.WriteLine();
             }
+            cursor.Quit();
+        }
+
+        private static bool PrintDetails(string[] details) {
+            if (details == null || details.Length == 0) {
+                Terminal.WriteLine("Profile not found", ConsoleColor.Red);
+                return false;
+            }
+
+            int usernameIndex = 0;
+            int privelegeIndex = 1;
+            int currentDatabaseIndex = 2;
+
+            Terminal.Write($"{details[privelegeIndex]}@{details[usernameIndex]}", ConsoleColor.Green);
+            Terminal.Write($" » ", ConsoleColor.Yellow);
+            Terminal.WriteLine($"({details[currentDatabaseIndex]})", ConsoleColor.Cyan);
+            Console.ResetColor();
+            return true;
         }
 
 
         private static Operation CommandExecutor(string input) {
             if (string.IsNullOrWhiteSpace(input)) return Operation.Skip;
-
             input = input.Trim();
             return CommandMap.TryGetValue(input, out var func) ? func() : Operation.Noop;
         }
@@ -60,24 +123,32 @@ namespace ProtonDB.CLI {
 
         private static string MultiLineParser(string input) {
             var sb = new StringBuilder();
+            string prevLine = string.Empty;
+            bool isValid = true;
             input = input.Trim();
             sb.Append(input);
             
             while (true) {
                 if (sb.Length > MAX_LENGTH) {
-                    Console.WriteLine("MultiLineParser too long.");
+                    Console.WriteLine("MultiLine Query too long.");
                     return string.Empty;
                 }
 
                 if (!string.IsNullOrWhiteSpace(input) && input.EndsWith(')')) break;
 
-                input = Terminal.Input($"{ProtonMeta.CurrentDatabase}= ");
+                input = Terminal.Input(ConsoleColor.White, $"- ").Trim();
                 if (string.IsNullOrWhiteSpace(input)) continue;
-
+                if (prevLine == string.Empty) {
+                    prevLine = input;
+                } else {
+                    if (char.IsLetter(prevLine[^1]) && char.IsLetter(input[0])) {
+                        isValid = false;
+                    }
+                }
                 sb.Append(input.Trim());
             }
 
-            return sb.ToString().Trim();
+            return isValid ? sb.ToString().Trim() : string.Empty;
         }
 
     }

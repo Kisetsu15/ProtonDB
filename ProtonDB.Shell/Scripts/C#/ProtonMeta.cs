@@ -1,27 +1,15 @@
 using Kisetsu.Utils;
 using System.Runtime.InteropServices;
 
-namespace ProtonDB.CLI {
+namespace ProtonDB.Shell {
     public static class ProtonMeta {
         private const string PROTON_DB = "ProtonDB";
-        private static string DatabaseMetaFile => Path.Combine(DatabaseDirectory, Token.databaseMetaFile);
-        private static string currentDatabase = Token.protonDB;
 
-        public const string defaultDatabase = Token.protonDB;
-        public static string CurrentDatabase { get => currentDatabase; set => currentDatabase = value; }
-        public static string DatabaseDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), PROTON_DB, Token._database);
-        public static Dictionary<string, string> GetDatabaseList() => (!File.Exists(DatabaseMetaFile)) ?
-            [] : Json.Load<string>(Path.Combine(DatabaseDirectory, Token.databaseMetaFile));
-
-
-        public static void Initialize() {
-            if (Directory.Exists(DatabaseDirectory)) return;
-            Terminal.WriteLine($"Initializing {PROTON_DB}...");
-            Directory.CreateDirectory(DatabaseDirectory);
-            Terminal.WriteLine($"Creating database directory: {DatabaseDirectory}");
-            Database.Create(Token.protonDB);
+        public static void Loading() {
+            Terminal.WriteLine($"\rVerifying {PROTON_DB}...");
             AddToPath(Directory.GetCurrentDirectory());
             ASCIISplashScreen();
+            Console.WriteLine($"\r\n\r\nWelcome to {PROTON_DB}!");
         }
 
         private static void AddToPath(string newPath) {
@@ -30,29 +18,29 @@ namespace ProtonDB.CLI {
                 var currentPath = Environment.GetEnvironmentVariable("PATH", target) ?? "";
 
                 if (currentPath.Split(';').Contains(newPath)) {
-                    Terminal.WriteLine($"'{newPath}' is already in PATH.", ConsoleColor.Yellow);
+                    Terminal.WriteLine($"\r'{newPath}' is already in PATH", ConsoleColor.Yellow);
                     return;
                 }
 
                 var updatedPath = currentPath + ";" + newPath;
                 Environment.SetEnvironmentVariable("PATH", updatedPath, target);
-                Terminal.WriteLine($"Successfully added '{newPath}' to PATH.");
+                Terminal.WriteLine($"\rSuccessfully added '{newPath}' to PATH");
                 RefreshEnvironment();
             } catch (Exception ex) {
-                Terminal.WriteLine($"Failed to update PATH\nFatal error: {ex.Message}", ConsoleColor.Red);
+                Terminal.WriteLine($"\rFailed to update PATH\nFatal error: {ex.Message}", ConsoleColor.Red);
             }
         }
 
         private static void RefreshEnvironment() {
             try {
-                Terminal.WriteLine("Refreshing environment variables...");
+                Terminal.WriteLine("\rRefreshing environment variables...");
                 const int HWND_BROADCAST = 0xFFFF;
                 const int WM_SETTINGCHANGE = 0x1A;
                 const int SMTO_ABORTIFHUNG = 0x0002;
 
                 SendMessageTimeout((IntPtr) HWND_BROADCAST, WM_SETTINGCHANGE, IntPtr.Zero, "Environment", SMTO_ABORTIFHUNG, 5000, out _);
             } catch (Exception ex) {
-                Terminal.WriteLine($"Failed to refresh environment variables: {ex.Message}", ConsoleColor.Red);
+                Terminal.WriteLine($"\rFailed to refresh environment variables: {ex.Message}", ConsoleColor.Red);
             }
         }
 

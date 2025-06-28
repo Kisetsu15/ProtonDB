@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Kisetsu.Utils" Version="1.0.4" />
+    <PackageReference Include="ProtonDB.Client" Version="1.0.1" />
   </ItemGroup>
 
 </Project>

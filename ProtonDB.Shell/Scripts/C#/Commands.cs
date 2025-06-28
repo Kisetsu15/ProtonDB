@@ -1,7 +1,7 @@
-using Kisetsu.Utils;
+﻿using Kisetsu.Utils;
 using System.Reflection;
 
-namespace ProtonDB.CLI {
+namespace ProtonDB.Shell {
     public static class Commands {
         public static void Version() => Terminal.WriteLine($" ProtonDB v{Assembly.GetExecutingAssembly().GetName().Version}");
         public static void Help() {
