@@ -24,6 +24,10 @@ namespace ProtonDB.Server {
                 }
 
                 var userConfig = Load(Meta.ProfileConfig);
+                if (userConfig.TryGetValue(userName, out _)) {
+                    return ["Profile already exists"];
+                }
+                
                 string createdAt = DateTime.UtcNow.ToString("o");
                 string salt = AES.GenerateSalt();
                 ProfileInfo profile = new(
@@ -89,6 +93,7 @@ namespace ProtonDB.Server {
                 if (userConfig == null) {
                     return ["No profiles found"];
                 }
+
                 List<string> profiles = [];
                 foreach (var userName in userConfig.UserNames) {
                     if (userConfig.TryGetValue(userName, out ProfileInfo? profile)) {

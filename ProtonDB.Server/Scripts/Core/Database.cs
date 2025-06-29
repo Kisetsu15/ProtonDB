@@ -53,7 +53,8 @@
                 return result.GetOutput(message);
             }
 
-            public static string[] List() {
+            public static string[] List(string args) {
+                if (!string.IsNullOrEmpty(args)) return ["List doesn't support argument"];
                 var result = StorageEngine.ListDatabase();
                 if (result.Length == 0) {
                     return ["No databases found"];

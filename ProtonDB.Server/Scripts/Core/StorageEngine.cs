@@ -51,7 +51,7 @@ namespace ProtonDB.Server {
         public struct Output {
             public bool success;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Meta.maxMessageLength)]
-            public string? message;
+            public string message;
         }
 
         [StructLayout(LayoutKind.Sequential)]

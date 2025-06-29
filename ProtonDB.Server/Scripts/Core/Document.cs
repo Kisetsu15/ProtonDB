@@ -65,6 +65,9 @@ namespace ProtonDB.Server {
                         },
                         StorageEngine.print_all_documents
                     );
+                    foreach (var item in result.GetOutput()) { 
+                        Terminal.Log( item );
+                    }
                     return result.GetOutput();
                 }
 

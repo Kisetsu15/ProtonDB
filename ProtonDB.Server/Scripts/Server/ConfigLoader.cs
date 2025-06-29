@@ -6,12 +6,12 @@ namespace ProtonDB.Server {
             WriteIndented = true
         };
 
-        public static ServerConfig Load(string filePath = "config.json") {
+        public static ServerConfig Load(string filePath = "serverConfig.json") {
             if (!File.Exists(filePath)) {
                 var defaultConfig = new ServerConfig();
                 var options = _jsonOptions;
                 File.WriteAllText(filePath, JsonSerializer.Serialize(defaultConfig, options));
-                Console.WriteLine("Config file not found. Generated default config.");
+                Console.WriteLine("Sever config file not found. Generated default config.");
                 return defaultConfig;
             }
 
