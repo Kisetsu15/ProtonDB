@@ -243,7 +243,6 @@ int print_filtered_documents(cJSON* collection, const char* key, const char* val
          }
         _index++;
     }
-    cJSON_Delete(collection);
     *list = document;
     return _index;
 }

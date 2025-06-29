@@ -1,5 +1,4 @@
-﻿using Kisetsu.Utils;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace ProtonDB.Server {
     public class DebugCommand : IServerCommand {

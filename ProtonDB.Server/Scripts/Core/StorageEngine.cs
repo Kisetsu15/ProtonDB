@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using Kisetsu.Utils;
+using System.Runtime.InteropServices;
 
 namespace ProtonDB.Server {
     namespace Core {
@@ -50,15 +51,15 @@ namespace ProtonDB.Server {
         [StructLayout(LayoutKind.Sequential)]
         public struct Output {
             public bool success;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Meta.maxMessageLength)]
-            public string message;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 384)]
+            public string? message;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct ArrayOut {
-            public int size;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Meta.maxMessageLength)]
-            public string message;
+            public int size; 
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 384)]
+            public string? message;
             public IntPtr list;
         }
 
@@ -74,7 +75,6 @@ namespace ProtonDB.Server {
             public static Result Link(QueryConfig config, Func<QueryConfig, Output> func) {
                 if ((config.databaseName == null && config.collectionName == null) || config.databaseName == null) return nullConfig;
                 var output = func(config);
-
                 return new Result {
                     success = output.success,
                     data = [output.message!],
@@ -84,12 +84,10 @@ namespace ProtonDB.Server {
 
             public static Result Link(QueryConfig config, Func<QueryConfig, ArrayOut> func) {
                 if ((config.databaseName == null && config.collectionName == null) || config.databaseName == null) return nullConfig;
-                var arrayOut = func(config);
-
+                ArrayOut arrayOut = func(config);
                 string[] data = arrayOut.size > 0 && arrayOut.list != IntPtr.Zero
                     ? GetArray(arrayOut.list, arrayOut.size)
                     : [];
-
                 return new Result {
                     success = arrayOut.size > 0,
                     data = data,
@@ -103,7 +101,7 @@ namespace ProtonDB.Server {
                     ? GetArray(arrayOut.list, arrayOut.size)
                     : [];
 
-                return arrayOut.size > 0 ? data : [arrayOut.message];
+                return arrayOut.size > 0 ? data : [arrayOut.message ?? "null"];
             }
 
 

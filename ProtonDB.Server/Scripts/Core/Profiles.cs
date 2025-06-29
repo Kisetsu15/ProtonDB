@@ -5,14 +5,14 @@ namespace ProtonDB.Server {
     namespace Core {
         public class Profiles {
 
-            public static string[] Create(string argument, QuerySession session) { 
-                if (session.CurrentPrivilege != Privilege.admin) {                     
+            public static string[] Create(string argument, QuerySession session) {
+                if (session.CurrentPrivilege != Privilege.admin) {
                     return ["Requires admin privilege"];
                 }
 
                 var arg = SplitArgs(argument, 2, 3);
                 if (arg == null) {
-                     return ["Invalid Argument"];
+                    return ["Invalid Argument"];
                 }
 
                 string userName = arg[0];
@@ -27,7 +27,7 @@ namespace ProtonDB.Server {
                 if (userConfig.TryGetValue(userName, out _)) {
                     return ["Profile already exists"];
                 }
-                
+
                 string createdAt = DateTime.UtcNow.ToString("o");
                 string salt = AES.GenerateSalt();
                 ProfileInfo profile = new(
@@ -35,7 +35,7 @@ namespace ProtonDB.Server {
                     salt,
                     privilege,
                     createdAt,
-                    privilege.Equals(Privilege.admin) ? [..Meta.GetDatabaseList().Keys] : [Meta.defaultDatabase]
+                    privilege.Equals(Privilege.admin) ? [.. Meta.GetDatabaseList().Keys] : [Meta.defaultDatabase]
                 );
 
                 userConfig.Add(userName, profile);
@@ -79,7 +79,7 @@ namespace ProtonDB.Server {
                         profileName = userName,
                         profileInfo = profileInfo
                     };
-                    
+
                     return true;
                 }
                 return false;
@@ -173,7 +173,7 @@ namespace ProtonDB.Server {
                         return false;
                     }
                     return info.Database.Contains(database);
-                } 
+                }
                 return false;
             }
 
@@ -181,10 +181,10 @@ namespace ProtonDB.Server {
             public static bool UpdateAdminDatabase() {
                 var config = Load(Meta.ProfileConfig);
                 List<string> databases = [.. Meta.GetDatabaseList().Keys];
-                foreach ( var info in config.UserNames) {
+                foreach (var info in config.UserNames) {
                     if (config.TryGetValue(info, out ProfileInfo? profile)) {
                         if (profile != null && profile.Privilege == Privilege.admin) {
-                            ProfileInfo temp = new (
+                            ProfileInfo temp = new(
                                 profile.Checksum,
                                 profile.Salt,
                                 profile.Privilege,
@@ -260,12 +260,8 @@ namespace ProtonDB.Server {
             }
 
             private static string[]? SplitArgs(string argument, int required = 1, int max = 2) {
-                Terminal.Log($"{argument} {required} {max}");
                 var args = argument.Split(',').Select(s => s.Trim().Trim('"')).ToArray();
                 if (args.Length < required || args.Length > max) return null;
-                foreach (var arg in args) {
-                    Terminal.Log(arg);
-                }
                 return args;
             }
 

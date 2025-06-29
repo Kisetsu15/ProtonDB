@@ -1,3 +1,4 @@
+using Kisetsu.Utils;
 using ProtonDB.Server.Core;
 using System.Collections.Concurrent;
 using System.Net;
@@ -40,7 +41,7 @@ namespace ProtonDB.Server {
                 while (!session.ShouldExit && client.Connected) {
                     string? input = await reader.ReadLineAsync();
                     if (input == null) break;
-                    var request = JsonSerializer.Deserialize<Request>(input!); 
+                    var request = JsonSerializer.Deserialize<Request>(input!);
                     if (request == null) continue;
                     if (!session.IsAuthenticated && request.Command?.ToUpperInvariant() != Command.login) {
                         await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {

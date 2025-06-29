@@ -1,9 +1,8 @@
 using Kisetsu.Utils;
-using System.Transactions;
 
 namespace ProtonDB.Server {
     namespace Core {
-        
+
 
         public static class Meta {
             private static string DatabaseMetaFile => Path.Combine(DatabaseDirectory, Storage._databaseMeta);

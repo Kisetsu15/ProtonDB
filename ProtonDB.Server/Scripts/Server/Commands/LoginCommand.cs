@@ -1,6 +1,4 @@
-﻿
-using Kisetsu.Utils;
-using ProtonDB.Server.Core;
+﻿using ProtonDB.Server.Core;
 using System.Text.Json;
 
 namespace ProtonDB.Server {
@@ -27,7 +25,7 @@ namespace ProtonDB.Server {
             string user = args[0].Trim();
             string pass = args[1].Trim();
 
-            bool success = Profiles.Login(user,pass, session);
+            bool success = Profiles.Login(user, pass, session);
 
             session.IsAuthenticated = success;
             await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {

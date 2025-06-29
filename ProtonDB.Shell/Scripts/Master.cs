@@ -59,7 +59,7 @@ namespace ProtonDB.Shell {
             while (true) {
                 if(!PrintProfileDetails(cursor.Profile())) break;
 
-                string input = Terminal.Input(ConsoleColor.White, "$ ");
+                /*string input = Terminal.Input(ConsoleColor.White, "$ ");
                 if (string.IsNullOrWhiteSpace(input)) { 
                     Console.WriteLine(); 
                     continue; 
@@ -68,20 +68,29 @@ namespace ProtonDB.Shell {
                 if (op == Operation.End) break;
                 if (op == Operation.Skip) continue;
 
-                input = MultiLineParser(input);
-                cursor.SafeQuery(input);
-                string[] output = cursor.FetchAll();
-                if (output.Length == 0) {
-                    Terminal.WriteLine("No results found.", ConsoleColor.Yellow);
-                } else {
-                    foreach (var line in output) {
-                        Terminal.WriteLine(line);
-                    }
-                }
+                input = MultiLineParser(input);*/
 
-                Console.WriteLine();
+                cursor.Query("db.use(vadachennai)");
+                cursor.PrintOutput();
+                cursor.Query("collection.list()"); 
+                cursor.PrintOutput();
+                cursor.Query("characters.print(age = 30)");
+                cursor.PrintOutput();
+                
             }
             cursor.Quit();
+        }
+
+        private static void PrintOutput(this Cursor cursor) {
+            string[] output = cursor.FetchAll();
+            if (output.Length == 0) {
+                Terminal.WriteLine("No results found.", ConsoleColor.Yellow);
+            } else {
+                foreach (var line in output) {
+                    Terminal.WriteLine(line);
+                }
+            }
+            Console.WriteLine();
         }
 
         private static Connection? CreateConnection() {

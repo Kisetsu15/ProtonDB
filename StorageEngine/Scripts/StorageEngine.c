@@ -212,8 +212,14 @@ export ArrayOut print_documents(const QueryConfig config) {
 
     char** _list = NULL;
     arrayOut.size = print_filtered_documents(_collection, config.key, config.value, config.condition, &_list, error);
+    if (arrayOut.size < 0) {
+        get_message(arrayOut.message,"fatal: Failed to print document \n%s", error);
+    } else if (arrayOut.size == 0) {
+        get_message(arrayOut.message, "fatal: Collection '%s' contains no documents\n%s", config.collectionName, error);
+    } else {
+        arrayOut.list = _list;
+    }
     cJSON_Delete(_collection);
-    arrayOut.list = _list;
     return arrayOut;
 }
 
@@ -228,7 +234,6 @@ export Output remove_documents(const QueryConfig config) {
     }
 
     const int _deletedCount = remove_filtered_documents(_collection, config.key, config.value, config.condition, error);
-
     if (_deletedCount > 0 && dump_binary(filePath, _collection, error)) {
         get_message(output.message, "Document removed %d", _deletedCount);
         output.success = true;
@@ -237,7 +242,6 @@ export Output remove_documents(const QueryConfig config) {
     }else {
         get_message(output.message, "No document found for specified condition");
     }
-
     cJSON_Delete(_collection);
     return output;
 }
@@ -256,21 +260,21 @@ export Output update_documents(const QueryConfig config) {
     }
 
     get_col_file(filePath, config.databaseName, config.collectionName);
-    cJSON* collection = load_binary(filePath, error);
-    if (!collection || !cJSON_IsArray(collection)) {
+    cJSON* _collection = load_binary(filePath, error);
+    if (!_collection || !cJSON_IsArray(_collection)) {
         get_message(output.message,
                  "fatal: Collection file for '%s' not found or invalid\n%s", config.databaseName, error);
-        if (collection) cJSON_Delete(collection);
+        if (_collection) cJSON_Delete(_collection);
         return output;
     }
 
-    const int _count = update_filtered_documents(collection, config.key, config.value,
+    const int _count = update_filtered_documents(_collection, config.key, config.value,
                                           config.condition, config.action, config.data, error);
 
     if (_count > 0) {
-        if (!dump_binary(filePath, collection, error)) {
+        if (!dump_binary(filePath, _collection, error)) {
             get_message(output.message, "fatal: Failed to save updated documents\n%s", error);
-            cJSON_Delete(collection);
+            cJSON_Delete(_collection);
             return output;
         }
         get_message(output.message, "Document updated %d", _count);
@@ -281,7 +285,7 @@ export Output update_documents(const QueryConfig config) {
         get_message(output.message, "No document found for given condition");
     }
 
-    cJSON_Delete(collection);
+    cJSON_Delete(_collection);
     return output;
 }
 

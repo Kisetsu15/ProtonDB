@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Kisetsu.Utils;
+using System.Text.RegularExpressions;
 
 namespace ProtonDB.Server {
     namespace Core {
@@ -10,7 +11,6 @@ namespace ProtonDB.Server {
                 if (query == null) {
                     return ["Invalid Query"];
                 }
-
                 return query.Object switch {
                     Token._database => ExecuteDatabaseCommand(query, s),
                     Token.collection => ExecuteCollectionCommand(query, s),
@@ -35,7 +35,7 @@ namespace ProtonDB.Server {
                     Token.use => Database.Use(query.Argument!, s),
                     Token.create => Database.Create(query.Argument!, s),
                     Token.drop => Database.Drop(query.Argument!, s),
-                    Token.list => Database.List(),
+                    Token.list => Database.List(query.Argument!),
                     _ => ["Invalid database command"]
                 };
             }

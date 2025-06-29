@@ -2,8 +2,8 @@
     namespace Core {
         public static class Database {
             public static string[] Use(string name, QuerySession session) {
-                if (string.IsNullOrEmpty(name))     return ["Database name cannot be empty"];
-                if (name == session.CurrentDatabase)   return [$"Already using database '{name}'"];
+                if (string.IsNullOrEmpty(name)) return ["Database name cannot be empty"];
+                if (name == session.CurrentDatabase) return [$"Already using database '{name}'"];
                 if (!Profiles.ValidateAccess(name, session)) return ["Access denied to the database"];
 
                 if (!Meta.GetDatabaseList().ContainsKey(name)) {
@@ -17,12 +17,9 @@
 
             public static string[] Create(string name, QuerySession session) {
                 string[] result = Linker(name, StorageEngine.create_database);
-                foreach (string s in result) {
-                    Console.WriteLine(s);
-                }
                 Profiles.UpdateDatabase(name, Action.add, session);
                 Profiles.UpdateAdminDatabase();
-                return result; 
+                return result;
             }
 
             public static string[] Drop(string name, QuerySession session) {

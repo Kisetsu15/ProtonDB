@@ -11,7 +11,7 @@ namespace ProtonDB.Server {
                 var defaultConfig = new ServerConfig();
                 var options = _jsonOptions;
                 File.WriteAllText(filePath, JsonSerializer.Serialize(defaultConfig, options));
-                Console.WriteLine("Sever config file not found. Generated default config.");
+                Console.WriteLine("Server config file not found. Generated default config.");
                 return defaultConfig;
             }
 

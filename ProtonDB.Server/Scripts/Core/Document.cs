@@ -65,9 +65,6 @@ namespace ProtonDB.Server {
                         },
                         StorageEngine.print_all_documents
                     );
-                    foreach (var item in result.GetOutput()) { 
-                        Terminal.Log( item );
-                    }
                     return result.GetOutput();
                 }
 
@@ -111,7 +108,7 @@ namespace ProtonDB.Server {
                             data = data,
                             action = action
                         },
-                        StorageEngine.remove_documents
+                        StorageEngine.update_all_documents
                     );
                     return result.GetOutput();
                 }
