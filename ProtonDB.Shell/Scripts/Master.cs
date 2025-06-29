@@ -60,14 +60,16 @@ namespace ProtonDB.Shell {
                 if(!PrintProfileDetails(cursor.Profile())) break;
 
                 string input = Terminal.Input(ConsoleColor.White, "$ ");
-               
+                if (string.IsNullOrWhiteSpace(input)) { 
+                    Console.WriteLine(); 
+                    continue; 
+                }
                 var op = CommandExecutor(input);
                 if (op == Operation.End) break;
                 if (op == Operation.Skip) continue;
 
                 input = MultiLineParser(input);
-                cursor.Query(input);
-
+                cursor.SafeQuery(input);
                 string[] output = cursor.FetchAll();
                 if (output.Length == 0) {
                     Terminal.WriteLine("No results found.", ConsoleColor.Yellow);
@@ -89,8 +91,8 @@ namespace ProtonDB.Shell {
             int _port = string.IsNullOrWhiteSpace(port) ? Connection.defaultPort : int.TryParse(port, out int parsedPort) ? parsedPort : -1;
             if (_port <= 0) _port = Connection.defaultPort;
 
-            string _username = Terminal.Input($"Username: ");
-            string _password = Terminal.Input($"Password: ");
+            string _username = "dharshik"; //Terminal.Input($"Username: ");
+            string _password = "welcome"; //Terminal.Input($"Password: ");
 
             if (string.IsNullOrWhiteSpace(_username) || string.IsNullOrWhiteSpace(_password)) {
                 Terminal.WriteLine("Username and password cannot be empty.", ConsoleColor.Red);
@@ -119,7 +121,6 @@ namespace ProtonDB.Shell {
 
 
         private static Operation CommandExecutor(string input) {
-            if (string.IsNullOrWhiteSpace(input)) return Operation.Skip;
             input = input.Trim();
             return CommandMap.TryGetValue(input, out var func) ? func() : Operation.Noop;
         }
@@ -127,11 +128,9 @@ namespace ProtonDB.Shell {
 
         private static string MultiLineParser(string input) {
             var sb = new StringBuilder();
-            string prevLine = string.Empty;
             bool isValid = true;
             input = input.Trim();
             sb.Append(input);
-            
             while (true) {
                 if (sb.Length > MAX_LENGTH) {
                     Console.WriteLine("MultiLine Query too long.");
@@ -142,16 +141,11 @@ namespace ProtonDB.Shell {
 
                 input = Terminal.Input(ConsoleColor.White, $"- ").Trim();
                 if (string.IsNullOrWhiteSpace(input)) continue;
-                if (prevLine == string.Empty) {
-                    prevLine = input;
-                } else {
-                    if (char.IsLetter(prevLine[^1]) && char.IsLetter(input[0])) {
-                        isValid = false;
-                    }
+                if (char.IsLetter(sb[^1]) && char.IsLetter(input[0])) {
+                    isValid = false;
                 }
                 sb.Append(input.Trim());
             }
-
             return isValid ? sb.ToString().Trim() : string.Empty;
         }
 
