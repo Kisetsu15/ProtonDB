@@ -42,7 +42,6 @@ namespace ProtonDB.Server {
                 if (message != null) {
                     return data.Length > 0 ? [data[0] + "\n" + message] : [message];
                 }
-
                 return data;
             }
         }
@@ -50,7 +49,7 @@ namespace ProtonDB.Server {
 
         [StructLayout(LayoutKind.Sequential)]
         public struct Output {
-            public bool success;
+            public int success;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 384)]
             public string? message;
         }
@@ -76,9 +75,9 @@ namespace ProtonDB.Server {
                 if ((config.databaseName == null && config.collectionName == null) || config.databaseName == null) return nullConfig;
                 var output = func(config);
                 return new Result {
-                    success = output.success,
+                    success = output.success == 1,
                     data = [output.message!],
-                    error = output.success ? null : output.message
+                    error = output.success == 1 ? null : output.message
                 };
             }
 

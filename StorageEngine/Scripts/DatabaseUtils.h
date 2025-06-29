@@ -35,7 +35,7 @@ typedef enum {
 } Action;
 
 typedef struct {
-    bool success;
+    int success;
     char message[MAX_MESSAGE_LEN];
 } Output;
 

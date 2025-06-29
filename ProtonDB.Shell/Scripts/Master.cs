@@ -24,10 +24,6 @@ namespace ProtonDB.Shell {
             [Token.help]     = () => { Commands.Help();    return Operation.Skip; },
             [Token._version] = () => { Commands.Version(); return Operation.Skip; },
             [Token.version]  = () => { Commands.Version(); return Operation.Skip; },
-            ["test"] = () => {
-                Terminal.WriteLine("Testing mode is not implemented yet.");
-                return Operation.Skip;
-            },
             ["reload"] = () => {
                 ProtonMeta.Loading();
                 return Operation.Skip;
@@ -59,7 +55,7 @@ namespace ProtonDB.Shell {
             while (true) {
                 if(!PrintProfileDetails(cursor.Profile())) break;
 
-                /*string input = Terminal.Input(ConsoleColor.White, "$ ");
+                string input = Terminal.Input(ConsoleColor.White, "$ ");
                 if (string.IsNullOrWhiteSpace(input)) { 
                     Console.WriteLine(); 
                     continue; 
@@ -68,15 +64,9 @@ namespace ProtonDB.Shell {
                 if (op == Operation.End) break;
                 if (op == Operation.Skip) continue;
 
-                input = MultiLineParser(input);*/
-
-                cursor.Query("db.use(vadachennai)");
+                input = MultiLineParser(input);
+                cursor.Query(input);
                 cursor.PrintOutput();
-                cursor.Query("collection.list()"); 
-                cursor.PrintOutput();
-                cursor.Query("characters.print(age = 30)");
-                cursor.PrintOutput();
-                
             }
             cursor.Quit();
         }
@@ -100,8 +90,8 @@ namespace ProtonDB.Shell {
             int _port = string.IsNullOrWhiteSpace(port) ? Connection.defaultPort : int.TryParse(port, out int parsedPort) ? parsedPort : -1;
             if (_port <= 0) _port = Connection.defaultPort;
 
-            string _username = "dharshik"; //Terminal.Input($"Username: ");
-            string _password = "welcome"; //Terminal.Input($"Password: ");
+            string _username = Terminal.Input($"Username: ");
+            string _password = Terminal.Input($"Password: ");
 
             if (string.IsNullOrWhiteSpace(_username) || string.IsNullOrWhiteSpace(_password)) {
                 Terminal.WriteLine("Username and password cannot be empty.", ConsoleColor.Red);

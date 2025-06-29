@@ -30,6 +30,7 @@ export Output create_database(const QueryConfig config) {
 
     output.success = true;
     get_message(output.message, "Database '%s' created", config.databaseName);
+    printf("%s\n", output.message);
     return output;
 }
 
