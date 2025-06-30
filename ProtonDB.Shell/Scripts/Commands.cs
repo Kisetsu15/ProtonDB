@@ -12,6 +12,14 @@ namespace ProtonDB.Shell {
             Terminal.WriteLine("  :v, --version                     Show ProtonDB version");
             Terminal.WriteLine("  :q, quit                          Exit ProtonDB");
             Terminal.WriteLine("  cls                               Clear Console");
+
+            Terminal.WriteLine("\nProfile Operations: profile.<operation>(argument)");
+            Terminal.WriteLine("  create(name,password,privilege)   Create a new profile");
+            Terminal.WriteLine("  delete(name)                      Drop a profiles");
+            Terminal.WriteLine("  grant(db_name)                    Grant access to database");
+            Terminal.WriteLine("  revoke(db_name)                   revoke access to database");
+            Terminal.WriteLine("  list()                            List all profiles");
+
             Terminal.WriteLine("\nDatabase Operations: db.<operation>(argument)");
             Terminal.WriteLine("  use(name)                         Use a database");
             Terminal.WriteLine("  create(name)                      Create a new database");

@@ -6,28 +6,29 @@ namespace ProtonDB.Shell {
         private const string PROTON_DB = "ProtonDB";
 
         public static void Loading() {
-            Terminal.WriteLine($"\rVerifying {PROTON_DB}...");
-            AddToPath(Directory.GetCurrentDirectory());
-            ASCIISplashScreen();
-            Console.WriteLine($"\r\n\r\nWelcome to {PROTON_DB}!");
+            if (AddToPath(Directory.GetCurrentDirectory())) {
+                ASCIISplashScreen();
+                Console.WriteLine($"\nWelcome to {PROTON_DB}!");
+            }
         }
 
-        private static void AddToPath(string newPath) {
+        private static bool AddToPath(string newPath) {
             try {
                 var target = EnvironmentVariableTarget.User;
                 var currentPath = Environment.GetEnvironmentVariable("PATH", target) ?? "";
 
                 if (currentPath.Split(';').Contains(newPath)) {
-                    Terminal.WriteLine($"\r'{newPath}' is already in PATH", ConsoleColor.Yellow);
-                    return;
+                    return false;
                 }
 
                 var updatedPath = currentPath + ";" + newPath;
                 Environment.SetEnvironmentVariable("PATH", updatedPath, target);
                 Terminal.WriteLine($"\rSuccessfully added '{newPath}' to PATH");
                 RefreshEnvironment();
+                return true;
             } catch (Exception ex) {
                 Terminal.WriteLine($"\rFailed to update PATH\nFatal error: {ex.Message}", ConsoleColor.Red);
+                return false;
             }
         }
 

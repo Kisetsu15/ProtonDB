@@ -24,13 +24,10 @@ namespace ProtonDB.Shell {
             [Token.help]     = () => { Commands.Help();    return Operation.Skip; },
             [Token._version] = () => { Commands.Version(); return Operation.Skip; },
             [Token.version]  = () => { Commands.Version(); return Operation.Skip; },
-            ["reload"] = () => {
-                ProtonMeta.Loading();
-                return Operation.Skip;
-            }
         };
 
         public static void Main(string[] args) {
+            ProtonMeta.Loading();
             if (args.Length > MAX_ARGUMENT) {
                 Terminal.WriteLine("ProtonDB takes only one argument. Usage: ProtonDB <command>");
                 return;
@@ -111,7 +108,7 @@ namespace ProtonDB.Shell {
             int privelegeIndex = 1;
             int currentDatabaseIndex = 2;
 
-            Terminal.Write($"{details[privelegeIndex]}@{details[usernameIndex]}", ConsoleColor.Green);
+            Terminal.Write($"{details[privelegeIndex]}_{details[usernameIndex]}", ConsoleColor.Green);
             Terminal.Write($" » ", ConsoleColor.Yellow);
             Terminal.WriteLine($"({details[currentDatabaseIndex]})", ConsoleColor.Cyan);
             Console.ResetColor();
@@ -138,7 +135,7 @@ namespace ProtonDB.Shell {
 
                 if (!string.IsNullOrWhiteSpace(input) && input.EndsWith(')')) break;
 
-                input = Terminal.Input(ConsoleColor.White, $"- ").Trim();
+                input = Terminal.Input(ConsoleColor.White, $"> ").Trim();
                 if (string.IsNullOrWhiteSpace(input)) continue;
                 if (char.IsLetter(sb[^1]) && char.IsLetter(input[0])) {
                     isValid = false;
