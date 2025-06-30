@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36221.1 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtonDB.Service", "ProtonDB.Service.csproj", "{A838C80A-8AF8-9D82-4BE5-754C5811ADC8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A838C80A-8AF8-9D82-4BE5-754C5811ADC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A838C80A-8AF8-9D82-4BE5-754C5811ADC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A838C80A-8AF8-9D82-4BE5-754C5811ADC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A838C80A-8AF8-9D82-4BE5-754C5811ADC8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9CE4E475-7B12-4645-97A9-1BD1E5BC1C3E}
+	EndGlobalSection
+EndGlobal

@@ -3,7 +3,7 @@
 **/obj/
 **/Output/
 **/.vs/
-
+**/build/
 
 # Ignore user-specific files
 *.user
