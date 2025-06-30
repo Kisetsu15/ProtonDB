@@ -29,7 +29,7 @@ namespace ProtonDB.Server {
         private async Task HandleClientAsync(TcpClient client) {
             var session = new QuerySession();
             _sessions[client] = session;
-
+            Meta.Initialize(session);
             using var stream = client.GetStream();
             using var reader = new StreamReader(stream, Encoding.UTF8);
             using var writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };

@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace ProtonDB.Shell {
     public static class Commands {
-        public static void Version() => Terminal.WriteLine($" ProtonDB v{Assembly.GetExecutingAssembly().GetName().Version}");
+        public static void Version() => Terminal.WriteLine($" ProtonDB v{Assembly.GetExecutingAssembly().GetName().Version}\n");
         public static void Help() {
             Terminal.WriteLine("\nUsage: protondb <command>");
             Terminal.WriteLine("\nCommands:");
@@ -49,7 +49,7 @@ namespace ProtonDB.Shell {
 
         }
 
-        public static void Quit() => Terminal.WriteLine("Exiting ProtonDB...");
+        public static void Quit() => Terminal.WriteLine("Exiting ProtonDB...\n");
 
         public static void Clear() => Console.Clear();
     }

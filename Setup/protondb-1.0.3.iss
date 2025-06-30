@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "ProtonDB"
-#define MyAppVersion "1.0.3"
+#define MyAppVersion "1.0.4"
 #define MyAppPublisher "Kisetsu Productions"
 #define MyAppURL "https://github.com/Kisetsu15/ProtonDB"
 #define MyAppExeName "ProtonDB.exe"
@@ -30,15 +30,15 @@ ArchitecturesAllowed=x64compatible
 ; the 64-bit view of the registry.
 ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
-LicenseFile=D:\C#\ProtonDB\LICENSE.txt
+LicenseFile=D:\Projects\ProtonDB\LICENSE.txt
 ; Remove the following line to run in administrative install mode (install for all users).
-PrivilegesRequired=lowest
-OutputBaseFilename=ProtonDB Setup 1.0.3
-SetupIconFile=D:\C#\ProtonDB\Assets\protondb_setup_icon.ico
+PrivilegesRequired=admin
+OutputBaseFilename=ProtonDB Setup 1.0.4
+SetupIconFile=D:\Projects\ProtonDB\Assets\protondb_setup_icon.ico
 SolidCompression=yes
 WizardStyle=modern
-WizardImageFile=D:\C#\ProtonDB\Assets\SideBar.bmp
-WizardSmallImageFile=D:\C#\ProtonDB\Assets\smallicon.bmp
+WizardImageFile=D:\Projects\ProtonDB\Assets\SideBar.bmp
+WizardSmallImageFile=D:\Projects\ProtonDB\Assets\smallicon.bmp
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -47,8 +47,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "D:\C#\ProtonDB\ProtonDB.CLI\bin\Release\net9.0\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\C#\ProtonDB\ProtonDB.CLI\bin\Release\net9.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "D:\Projects\ProtonDB\build\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\Projects\ProtonDB\build\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -57,4 +57,11 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\bin\nssm.exe"; Parameters: "install ProtonDBService ""{app}\bin\ProtonDB.Service.exe"""; StatusMsg: "Installing ProtonDB as a service..."
+Filename: "{app}\bin\nssm.exe"; Parameters: "start ProtonDBService"; StatusMsg: "Starting ProtonDB Service..."; Flags: nowait runhidden
+
+[UninstallRun]
+Filename: "{app}\bin\nssm.exe"; Parameters: "stop ProtonDBService"; RunOnceId: stop_protondb
+Filename: "{app}\bin\nssm.exe"; Parameters: "remove ProtonDBService confirm"; RunOnceId: remove_protondb
+
 

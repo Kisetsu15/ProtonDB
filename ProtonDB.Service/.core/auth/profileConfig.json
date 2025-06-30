@@ -1,0 +1,11 @@
+{
+  "admin123": {
+    "Checksum": "f1106cd87b90ba1f3e14d6c44ad42a0f1507dcc54f409536c97e96174dff878d",
+    "Salt": "EYXu1nYk3txTAfB3y8S31A==",
+    "Privilege": "admin",
+    "CreatedAt": "2025-06-30T18:02:57.2426665Z",
+    "Database": [
+      "proton"
+    ]
+  }
+}

@@ -94,7 +94,6 @@ namespace ProtonDB.Shell {
                 Terminal.WriteLine("Username and password cannot be empty.", ConsoleColor.Red);
                 return null;
             }
-
             return Connection.Connect(_host, _port, _username, _password);
         }
 

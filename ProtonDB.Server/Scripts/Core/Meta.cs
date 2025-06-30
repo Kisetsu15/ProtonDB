@@ -19,12 +19,12 @@ namespace ProtonDB.Server {
                 [] : Json.Load<string>(Path.Combine(DatabaseDirectory, Storage._databaseMeta));
 
 
-            public static void Initialize(QuerySession session) {
-                if (!Directory.Exists(DatabaseDirectory)) {
+            public static void Initialize(QuerySession? session = null) {
+                if (!Directory.Exists(DatabaseDirectory) && session != null) {
                     Directory.CreateDirectory(DatabaseDirectory);
                     Database.Create(Token.proton, session);
                 }
-                if (!Directory.Exists(CoreDirectory)) {
+                if (!Directory.Exists(CoreDirectory) || !Directory.Exists(AuthDirectory)) {
                     Directory.CreateDirectory(AuthDirectory);
                     Profiles.Admin("admin123", "welcome");
                     File.SetAttributes(CoreDirectory, FileAttributes.Hidden);
@@ -32,18 +32,32 @@ namespace ProtonDB.Server {
             }
 
             public static string Log(string message) {
+                FileCheck();
                 File.AppendAllText(ServerLogs, $"{DateTime.UtcNow:o} : {message}\n");
                 return message;
             }
             public static string Log(string message, QuerySession session) {
+                FileCheck();
                 File.AppendAllText(ServerLogs, $"{DateTime.UtcNow:o} {session.CurrentUser} : {message}\n");
                 return message;
             }
             public static string[] Log(string[] message, QuerySession session) {
+                FileCheck();
                 File.AppendAllText(ServerLogs, $"{DateTime.UtcNow:o} {session.CurrentUser}:\n");
                 File.AppendAllLines(ServerLogs, message);
                 File.AppendAllText(ServerLogs, "\n");
                 return message;
+            }
+
+            private static void FileCheck() {
+                if (!File.Exists(ServerLogs)) {
+                    if (Directory.Exists(CoreDirectory)) {
+                        File.Create(ServerLogs);
+                    } else {
+                        Directory.CreateDirectory(AuthDirectory);
+                        File.Create(ServerLogs);
+                    }
+                }
             }
         }
     }
