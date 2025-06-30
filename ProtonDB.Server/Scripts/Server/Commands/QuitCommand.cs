@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using ProtonDB.Server.Core;
+using System.Text.Json;
 
 namespace ProtonDB.Server {
 
@@ -6,7 +7,7 @@ namespace ProtonDB.Server {
         public async Task ExecuteAsync(QuerySession session, StreamWriter writer, Request request) {
             await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {
                 Status = "ok",
-                Message = "Goodbye"
+                Message = Meta.Log("Goodbye")
             }));
             session.ShouldExit = true;
         }

@@ -32,16 +32,17 @@ namespace ProtonDB.Server {
             }
 
             public static string Log(string message) {
-                File.WriteAllText(DatabaseDirectory, $"{DateTime.UtcNow:o} : {message}");
+                File.AppendAllText(ServerLogs, $"{DateTime.UtcNow:o} : {message}\n");
                 return message;
             }
             public static string Log(string message, QuerySession session) {
-                File.WriteAllText(DatabaseDirectory, $"{DateTime.UtcNow:o} {session.CurrentUser} : {message}");
+                File.AppendAllText(ServerLogs, $"{DateTime.UtcNow:o} {session.CurrentUser} : {message}\n");
                 return message;
             }
             public static string[] Log(string[] message, QuerySession session) {
-                File.WriteAllText(DatabaseDirectory, $"{DateTime.UtcNow:o} {session.CurrentUser}:");
-                File.WriteAllLines(DatabaseDirectory, message);
+                File.AppendAllText(ServerLogs, $"{DateTime.UtcNow:o} {session.CurrentUser}:\n");
+                File.AppendAllLines(ServerLogs, message);
+                File.AppendAllText(ServerLogs, "\n");
                 return message;
             }
         }

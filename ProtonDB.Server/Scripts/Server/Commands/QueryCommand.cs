@@ -10,7 +10,7 @@ namespace ProtonDB.Server {
             session.LastQuery = Meta.Log(query, session);
             session.Result = Parser.Execute(query, session);
             await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {
-                Message = "Query accepted. Use FETCH to retrieve result."
+                Message = Meta.Log("Query accepted. Use FETCH to retrieve result.")
             }));
         }
     }

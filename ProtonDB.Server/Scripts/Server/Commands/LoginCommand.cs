@@ -30,7 +30,7 @@ namespace ProtonDB.Server {
             session.IsAuthenticated = success;
             await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {
                 Status = success ? "ok" : "error",
-                Message = success ? "Login successful" : "Invalid username or password"
+                Message = Meta.Log(success ? "Login successful" : "Invalid username or password", session)
             }));
         }
     }

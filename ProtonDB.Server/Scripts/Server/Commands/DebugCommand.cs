@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using ProtonDB.Server.Core;
+using System.Text.Json;
 
 namespace ProtonDB.Server {
     public class DebugCommand : IServerCommand {
@@ -23,7 +24,7 @@ namespace ProtonDB.Server {
             session.Debug = _enable;
             await writer.WriteLineAsync(JsonSerializer.Serialize(new Response {
                 Status = "ok",
-                Message = $"Debug logs {(_enable ? "enabled" : "disabled")}"
+                Message = Meta.Log($"Debug logs {(_enable ? "enabled" : "disabled")}", session)
             }));
         }
     }
