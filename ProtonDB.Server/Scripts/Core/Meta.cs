@@ -14,6 +14,7 @@ namespace ProtonDB.Server {
 
             public const string defaultDatabase = Token.proton;
             public const int maxMessageLength = 384;
+            public static string ServerLogs => Path.Combine(CoreDirectory, "server.log");
             public static Dictionary<string, string> GetDatabaseList() => (!File.Exists(DatabaseMetaFile)) ?
                 [] : Json.Load<string>(Path.Combine(DatabaseDirectory, Storage._databaseMeta));
 
@@ -28,6 +29,20 @@ namespace ProtonDB.Server {
                     Profiles.Admin("admin123", "welcome");
                     File.SetAttributes(CoreDirectory, FileAttributes.Hidden);
                 }
+            }
+
+            public static string Log(string message) {
+                File.WriteAllText(DatabaseDirectory, $"{DateTime.UtcNow:o} : {message}");
+                return message;
+            }
+            public static string Log(string message, QuerySession session) {
+                File.WriteAllText(DatabaseDirectory, $"{DateTime.UtcNow:o} {session.CurrentUser} : {message}");
+                return message;
+            }
+            public static string[] Log(string[] message, QuerySession session) {
+                File.WriteAllText(DatabaseDirectory, $"{DateTime.UtcNow:o} {session.CurrentUser}:");
+                File.WriteAllLines(DatabaseDirectory, message);
+                return message;
             }
         }
     }

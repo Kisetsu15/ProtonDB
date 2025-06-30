@@ -1,4 +1,3 @@
-using Kisetsu.Utils;
 using ProtonDB.Server.Core;
 using System.Collections.Concurrent;
 using System.Net;
@@ -19,7 +18,7 @@ namespace ProtonDB.Server {
 
         public async Task StartAsync() {
             _listener.Start();
-            Console.WriteLine($"ProtonDB server started on port {_port}...");
+            Meta.Log($"ProtonDB server started on port {_port}...");
 
             while (true) {
                 var client = await _listener.AcceptTcpClientAsync();
@@ -63,7 +62,7 @@ namespace ProtonDB.Server {
                     }));
                 }
             } catch (Exception ex) {
-                Console.WriteLine($"[ERROR] {ex.Message}");
+                Meta.Log($"[ERROR] {ex.Message}", session);
             } finally {
                 _sessions.TryRemove(client, out _);
                 client.Close();
