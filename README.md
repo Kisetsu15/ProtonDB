@@ -46,7 +46,7 @@ make
 dotnet run --project ProtonDB.Server
 ```
 
-Or install with `nssm` or use the installer from `Setup/`.
+Or install with `nssm` or use the installer from Releases.
 
 ---
 
@@ -68,7 +68,6 @@ Communication is done via **UTF-8 JSON lines** over TCP:
 
 * Admins can manage all databases and profiles
 * Users can access only allowed databases
-* Guests are temporary with limited access
 * Passwords are never stored, only salted checksums
 
 ---
@@ -94,6 +93,12 @@ var data = conn.FetchAll();
 ## 📄 License
 
 MIT — Free to modify and redistribute.
+
+---
+
+## 🤖 Author
+
+### Kisetsu
 
 ---
 
