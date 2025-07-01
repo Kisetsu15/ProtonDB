@@ -1,112 +1,107 @@
-# ⚛️ ProtonDB
+# ProtonDB ⚛️
 
-**ProtonDB** is a lightweight, portable, NoSQL-inspired database engine designed for simplicity, scriptability, and atomic document operations.
-Built in **C (storage engine)** and powered by a sleek **C# CLI frontend**, it delivers fast, JSON-based, document-oriented data management — all without a server.
-
----
-
-## 🚀 Features
-
-* 🗂️ Lightweight database and collection management
-* 🧾 Document insert, query, update, and delete operations
-* ⚡ In-memory speed with persistent binary storage
-* 📦 JSON-based documents, human-friendly and machine-fast
-* 🧠 Conditional filters and smart update actions
-* 🖥️ Minimalist CLI interface with expressive syntax
-* 🧪 Multi-line input support for scripting
+A modular, embedded NoSQL database engine built with C and C#. It includes a TCP server, shell interface, secure profile system, and multi-language client bindings.
 
 ---
 
-## 📦 Example Commands
+## 🗃 Features
 
-### 🔧 Database Operations
+- Embedded document store (binary-based)
+- C# interop via `DllImport`
+- Secure profile-based access (admin/user)
+- TCP server with command routing
+- Python & C# client wrappers
+- Built-in command-line shell
+- NSSM/Windows Service ready
+- Setup script via Inno Installer
+
+---
+
+## 🧭 Structure
+
+| Folder                | Description                            |
+|----------------------|----------------------------------------|
+| `ProtonDB.Client`    | C# TCP client interface                |
+| `ProtonDB.Server`    | TCP server and command router          |
+| `ProtonDB.Shell`     | Terminal shell for interactive usage   |
+| `ProtonDB.Service`   | Background service variant             |
+| `StorageEngine`      | Core NoSQL engine (C)                  |
+| `Wrapper/Python/`    | Client wrappers                        |
+| `Setup/`             | Inno Setup script                      |
+
+---
+
+## 🚀 Getting Started
+
+### Build the storage engine
 
 ```bash
-db.use("users")           # Use an existing database
-db.create("users")        # Create a new database
-db.drop()                 # Drop the current database
-db.drop("logs")           # Drop a specific database
-db.list()                 # List all databases
+cd StorageEngine
+make
+````
+
+### Run the server
+
+```bash
+dotnet run --project ProtonDB.Server
 ```
 
-### 📂 Collection Operations
-
-```bash
-collection.create("profiles")   # Create a new collection
-collection.drop("logs")         # Drop a collection
-collection.list()               # List collections in current DB
-```
-
-### 📄 Document Operations
-
-```bash
-profiles.insert({ "name": "Alice", "age": 30 })             # Insert one document
-profiles.insert([{ "name": "Alice" }, { "name": "Ben" }])   # Insert many
-profiles.print()                                             # Print all
-profiles.print(age>=18)                                      # Filtered print
-profiles.remove()                                            # Remove all documents
-profiles.remove(name=Bob)                                    # Conditional removal
-
-# Update operations
-profiles.update(add, {"score": 100})                         # Add new field to all
-profiles.update(drop, {"score"})                             # Remove field
-profiles.update(alter, {"name": "John"}, name=Tom)           # Conditionally alter
-```
+Or install with `nssm` or use the installer from Releases.
 
 ---
 
-## 🧾 Multi-Line Input
+## 🔌 Protocol
 
-```bash
-db.
-create(
-  "school"
-)
----
-profiles.remove(
-  age > 19
-)
----
-collection.
-list()
+Communication is done via **UTF-8 JSON lines** over TCP:
+
+```json
+// Request
+{ "command": "QUERY", "data": "document.insert(...)" }
+
+// Response
+{ "status": "ok", "message": "Saved", "result": ["..."] }
 ```
 
 ---
 
-## 📘 Syntax Reference
+## 🔐 Auth Model
 
-| Element       | Example                    |
-| ------------- | -------------------------- |
-| **Action**    | `add`, `drop`, `alter`     |
-| **Data**      | `{ "key": value }`         |
-| **Condition** | `key<op>value` → `age>=18` |
-| **Operators** | `<`, `<=`, `>`, `>=`, `=`  |
-
-📝 **Note:** Use `{ "key" }` format for `drop` actions.
+* Admins can manage all databases and profiles
+* Users can access only allowed databases
+* Passwords are never stored, only salted checksums
 
 ---
 
-## 💻 CLI Meta Commands
+## 📦 Packaging
 
-| Command           | Description              |
-| ----------------- | ------------------------ |
-| `protondb`        | Start the ProtonDB shell |
-| `:h`, `--help`    | Show help message        |
-| `:v`, `--version` | Show version info        |
-| `:q`, `quit`      | Quit the CLI             |
-| `cls`             | Clear console            |
+* C# Client: `ProtonDB.Client`
+* Setup via Inno Installer
+* Service version: `ProtonDB.Service`
+
+---
+
+## 🧪 Example
+
+```csharp
+var conn = Connection.Connect("localhost", 9090, "admin", "admin");
+conn.Query("document.insert({ \"name\": \"Kisetsu\" })");
+var data = conn.FetchAll();
+```
 
 ---
 
 ## 📄 License
 
-Licensed under the [MIT License](LICENSE).
-Use it, fork it, extend it — no restrictions.
+MIT — Free to modify and redistribute.
 
 ---
 
-## ✨ Author
+## 🤖 Author
 
-Built with purpose by **Kisetsu**
-From bytes to brilliance 🧊
+### Kisetsu
 
+---
+
+## 🤝 Contributions
+
+Fork and PR welcome. Please test against TCP + Shell modes.

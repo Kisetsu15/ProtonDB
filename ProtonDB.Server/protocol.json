@@ -2,7 +2,7 @@
   "request": {
     "format": [
       {
-        "command": "QUERY | FETCH | EXIT | DEBUG ON | DEBUG OFF",
+        "command": "QUERY | FETCH | EXIT | DEBUG ON | DEBUG OFF | PROFILE",
         "data": "string // optional"
       },
       {
