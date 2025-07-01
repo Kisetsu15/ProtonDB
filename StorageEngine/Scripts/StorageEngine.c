@@ -198,7 +198,7 @@ export ArrayOut print_documents(const QueryConfig config) {
     cJSON* _collection = load_binary(filePath, error);
 
     if (!_collection) {
-        get_message(arrayOut.message, "fatal: Collection file for '%s' not found or empty\n%s", config.databaseName, error);
+        get_message(arrayOut.message, "fatal: Collection '%s' not found or empty\n%s", config.collectionName, error);
         arrayOut.size = -1;
         return arrayOut;
     }
@@ -228,7 +228,7 @@ export Output remove_documents(const QueryConfig config) {
     get_col_file(filePath, config.databaseName, config.collectionName);
     cJSON* _collection = load_binary(filePath, error);
     if (!_collection || !cJSON_IsArray(_collection)) {
-        get_message(output.message, "fatal: Collection file for '%s' not found or empty\n%s", config.databaseName, error);
+        get_message(output.message, "fatal: Collection '%s' not found or empty\n%s", config.collectionName, error);
         if (_collection) cJSON_Delete(_collection);
         return output;
     }
@@ -263,7 +263,7 @@ export Output update_documents(const QueryConfig config) {
     cJSON* _collection = load_binary(filePath, error);
     if (!_collection || !cJSON_IsArray(_collection)) {
         get_message(output.message,
-                 "fatal: Collection file for '%s' not found or invalid\n%s", config.databaseName, error);
+                 "fatal: Collection '%s' not found or invalid\n%s", config.collectionName, error);
         if (_collection) cJSON_Delete(_collection);
         return output;
     }
