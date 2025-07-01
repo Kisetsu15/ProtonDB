@@ -6,7 +6,7 @@ namespace ProtonDB.Shell {
         private const string PROTON_DB = "ProtonDB";
 
         public static void Loading() {
-            if (AddToPath(Directory.GetCurrentDirectory())) {
+            if (AddToPath(AppContext.BaseDirectory)) {
                 ASCIISplashScreen();
                 Console.WriteLine($"\nWelcome to {PROTON_DB}!");
             }
