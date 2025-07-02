@@ -1,4 +1,37 @@
-﻿using Kisetsu.Utils;
+﻿// -------------------------------------------------------------------------------------------------
+//  File: Document.cs
+//  Namespace: ProtonDB.Server.Core
+//  Description:
+//      Provides static methods for document-level operations within a collection, including
+//      insert, remove, print (query), and update. Supports conditional and unconditional
+//      operations, and parses user arguments for flexible document manipulation. Integrates
+//      with StorageEngine for persistence and uses Parser utilities for argument parsing.
+//
+//  Public Methods:
+//      - Insert: Inserts a document into a collection.
+//      - Remove: Removes documents from a collection, with optional condition support.
+//      - Print: Retrieves documents from a collection, with optional condition support.
+//      - Update: Updates documents in a collection, supporting actions (add, drop, alter)
+//        and optional conditions.
+//
+//  Internal Methods:
+//      - ParseUpdateArgument: Parses update command arguments into action, data, and condition.
+//      - ConditionParser: Parses a condition string into key, value, and condition operator.
+//      - GetAction: Maps string to Action enum.
+//      - GetCondition: Maps string to Condition enum.
+//
+//  Dependencies:
+//      - Query: Represents a parsed user query (object, argument, etc.).
+//      - QuerySession: Represents the current user session and context.
+//      - StorageEngine: Handles low-level document operations.
+//      - Parser: Provides parsing utilities for conditions and actions.
+//      - Kisetsu.Utils: Utility extensions (e.g., Strip).
+//
+//  Usage Example:
+//      var result = Document.Insert(query, session);
+// -------------------------------------------------------------------------------------------------
+
+using Kisetsu.Utils;
 using System.Text;
 using System.Text.RegularExpressions;
 using static ProtonDB.Server.Core.Parser;
@@ -6,7 +39,16 @@ using static ProtonDB.Server.Core.Parser;
 namespace ProtonDB.Server {
     namespace Core {
 
+        /// <summary>
+        /// Provides static methods for document-level operations within a collection.
+        /// </summary>
         public static class Document {
+            /// <summary>
+            /// Inserts a document into the specified collection.
+            /// </summary>
+            /// <param name="query">The query containing the collection and document data.</param>
+            /// <param name="session">The current query session.</param>
+            /// <returns>Status or error messages.</returns>
             public static string[] Insert(Query query, QuerySession session) {
                 if (query.Argument == null) {
                     return ["Insert requires a document argument"];
@@ -24,6 +66,13 @@ namespace ProtonDB.Server {
                 return result.GetOutput();
             }
 
+            /// <summary>
+            /// Removes documents from the specified collection.
+            /// If no argument is provided, removes all documents; otherwise, removes documents matching the condition.
+            /// </summary>
+            /// <param name="query">The query containing the collection and optional condition.</param>
+            /// <param name="session">The current query session.</param>
+            /// <returns>Status or error messages.</returns>
             public static string[] Remove(Query query, QuerySession session) {
                 Result result = new();
                 if (query.Argument == null) {
@@ -55,6 +104,13 @@ namespace ProtonDB.Server {
                 return result.GetOutput();
             }
 
+            /// <summary>
+            /// Retrieves documents from the specified collection.
+            /// If no argument is provided, prints all documents; otherwise, prints documents matching the condition.
+            /// </summary>
+            /// <param name="query">The query containing the collection and optional condition.</param>
+            /// <param name="session">The current query session.</param>
+            /// <returns>Document data or error messages.</returns>
             public static string[] Print(Query query, QuerySession session) {
                 Result result = new();
                 if (query.Argument == null) {
@@ -86,6 +142,13 @@ namespace ProtonDB.Server {
                 return result.GetOutput();
             }
 
+            /// <summary>
+            /// Updates documents in the specified collection.
+            /// Supports actions (add, drop, alter) and optional conditions.
+            /// </summary>
+            /// <param name="query">The query containing the collection, update data, and optional condition.</param>
+            /// <param name="session">The current query session.</param>
+            /// <returns>Status or error messages.</returns>
             public static string[] Update(Query query, QuerySession session) {
                 if (query.Argument == null) {
                     return ["Update requires a document argument"];
@@ -132,6 +195,9 @@ namespace ProtonDB.Server {
                 return result.GetOutput();
             }
 
+            /// <summary>
+            /// Represents the parsing state for update arguments.
+            /// </summary>
             private enum State {
                 Action,
                 Token,
@@ -139,6 +205,12 @@ namespace ProtonDB.Server {
                 Condition
             };
 
+            /// <summary>
+            /// Parses the update argument into action, data, and optional condition.
+            /// </summary>
+            /// <param name="argument">The update argument string.</param>
+            /// <param name="error">Output error messages if parsing fails.</param>
+            /// <returns>Tuple of action, data, and optional condition; or null if invalid.</returns>
             private static (Action action, string data, string? condition)? ParseUpdateArgument(string argument, out string[] error) {
                 error = [];
                 State state = State.Action;
@@ -204,6 +276,11 @@ namespace ProtonDB.Server {
                 return null;
             }
 
+            /// <summary>
+            /// Parses a condition string into key, value, and condition operator.
+            /// </summary>
+            /// <param name="argument">The condition string.</param>
+            /// <returns>Tuple of key, value, and condition; or null if invalid.</returns>
             private static (string key, string value, Condition condition)? ConditionParser(string argument) {
                 argument = argument.Strip(' ');
                 var match = Regex.Match(argument, @"^(?<key>\w+)(?<condition>>=|<=|=|>|<)(?<value>.+)$");
@@ -218,6 +295,11 @@ namespace ProtonDB.Server {
                 return (key, value, condition);
             }
 
+            /// <summary>
+            /// Maps a string to the corresponding Action enum value.
+            /// </summary>
+            /// <param name="action">The action string.</param>
+            /// <returns>The Action enum value.</returns>
             private static Action GetAction(string action) => action switch {
                 "add" => Action.add,
                 "drop" => Action.drop,
@@ -225,6 +307,11 @@ namespace ProtonDB.Server {
                 _ => Action.invalid
             };
 
+            /// <summary>
+            /// Maps a string to the corresponding Condition enum value.
+            /// </summary>
+            /// <param name="op">The condition operator string.</param>
+            /// <returns>The Condition enum value.</returns>
             private static Condition GetCondition(string op) => op switch {
                 "=" => Condition.equal,
                 ">" => Condition.greaterThan,
