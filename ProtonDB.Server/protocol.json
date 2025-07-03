@@ -1,23 +1,31 @@
 {
-  "request": {
-    "format": [
+  "Request": {
+    "Format": [
       {
-        "command": "QUERY | FETCH | EXIT | DEBUG ON | DEBUG OFF | PROFILE",
-        "data": "string // optional"
+        "Command": "FETCH | EXIT | PROFILE",
+        "Data": null
       },
       {
-        "command": "LOGIN",
-        "data": "username,password"
+        "Command": "QUERY",
+        "Data": "string"
+      },
+      {
+        "Command": "DEBUG",
+        "Data": true | false
+      },
+      {
+        "Command": "LOGIN",
+        "Data": "username,password"
       }
     ]
   },
-  "response": {
-    "format": {
-      "status": "ok | error",
-      "message": "string",
-      "result": [ "string", "..." ]
+  "Response": {
+    "Format": {
+      "Status": "ok | error",
+      "Message": "string",
+      "Result": [ "string", "..." ]
     }
   },
-  "encoding": "UTF-8",
-  "transport": "TCP (one JSON line per message)"
+  "Encoding": "UTF-8",
+  "Transport": "TCP (one JSON line per message)"
 }
