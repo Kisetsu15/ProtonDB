@@ -27,6 +27,7 @@ typedef enum {
     lessThan,
     lessThanEqual,
     equal,
+    notEqual,
     all
 } Condition;
 

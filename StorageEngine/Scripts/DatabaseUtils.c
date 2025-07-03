@@ -481,6 +481,7 @@ bool is_related(const double value1, const double value2, const Condition condit
         case lessThan:         return value1 < value2;
         case lessThanEqual:    return value1 <= value2;
         case equal:            return value1 == value2;
+        case notEqual:         return value1 != value2;
         default: return false;
     }
 }
