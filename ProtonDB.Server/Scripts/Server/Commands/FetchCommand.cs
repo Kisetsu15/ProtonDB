@@ -40,4 +40,7 @@ namespace ProtonDB.Server {
         /// <param name="request">The incoming request containing the command and data.</param>
         public async Task ExecuteAsync(QuerySession session, StreamWriter writer, Request request) {
             var res = session.Result ?? ["No stored result to fetch."];
-            await writer.WriteLineAsync(JsonSerializer.Serialize(new Response { Result = Meta.Log(res, 
+            await writer.WriteLineAsync(JsonSerializer.Serialize(new Response { Result = Meta.Log(res, session) }));
+        }
+    }
+}

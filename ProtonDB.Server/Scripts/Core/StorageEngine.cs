@@ -39,7 +39,6 @@
 //      var collections = StorageEngine.Link(config, StorageEngine.list_collection);
 // -------------------------------------------------------------------------------------------------
 
-using Kisetsu.Utils;
 using System.Runtime.InteropServices;
 
 namespace ProtonDB.Server {
@@ -54,6 +53,7 @@ namespace ProtonDB.Server {
             lessThan,
             lessThanEqual,
             equal,
+            notEqual,
             all,
             invalid,
         };

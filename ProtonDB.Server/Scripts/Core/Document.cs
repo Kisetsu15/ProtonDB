@@ -283,7 +283,7 @@ namespace ProtonDB.Server {
             /// <returns>Tuple of key, value, and condition; or null if invalid.</returns>
             private static (string key, string value, Condition condition)? ConditionParser(string argument) {
                 argument = argument.Strip(' ');
-                var match = Regex.Match(argument, @"^(?<key>\w+)(?<condition>>=|<=|=|>|<)(?<value>.+)$");
+                var match = Regex.Match(argument, @"^(?<key>\w+)(?<condition>>=|<=|=|>|<|!=)(?<value>.+)$");
 
                 if (!match.Success)
                     return null;
@@ -314,6 +314,7 @@ namespace ProtonDB.Server {
             /// <returns>The Condition enum value.</returns>
             private static Condition GetCondition(string op) => op switch {
                 "=" => Condition.equal,
+                "!=" => Condition.notEqual,
                 ">" => Condition.greaterThan,
                 "<" => Condition.lessThan,
                 ">=" => Condition.greaterThanEqual,

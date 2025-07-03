@@ -106,4 +106,4 @@ namespace ProtonDB.Server {
                 _users.TryGetValue(userName, out var profile) ? profile : null;
         }
     }
-}s
+}
