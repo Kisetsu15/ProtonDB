@@ -1,16 +1,23 @@
+// Include standard and utility headers
 #include <stdlib.h>
 #include <string.h>
 #include <io.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include "DatabaseUtils.h"
 
-#include <stdarg.h>
-
-#include "cJSON.h"
+// Global buffers for returning names and documents
 char** names;
 char** document;
 
+// Local helper functions
+void print_item(char** document, int index, const cJSON* item);
+bool is_related(double value1, double value2, Condition condition);
+const char* file_type_string(FileType fileType);
+
+
+// Check if a database exists in the metadata file
 bool check_database(const char* databaseName) {
     bool _exist = false;
     char _metaPath[MAX_PATH_LEN];
@@ -22,6 +29,7 @@ bool check_database(const char* databaseName) {
     return _exist;
 }
 
+// Delete all contents inside a given directory (non-recursive)
 void delete_dir_content(const char* directory) {
     char _searchPath[MAX_PATH_LEN];
     snprintf(_searchPath, sizeof(_searchPath), "%s\\*.*", directory);
@@ -41,6 +49,7 @@ void delete_dir_content(const char* directory) {
     _findclose(_handle);
 }
 
+// Remove an entry from metadata (database or collection)
 bool remove_entry(const char* metaFile, const char* name, const FileType fileType, char* error) {
     const char* fileString = file_type_string(fileType);
     bool _status = false;
@@ -63,6 +72,7 @@ bool remove_entry(const char* metaFile, const char* name, const FileType fileTyp
     return _status;
 }
 
+// Append a new entry to metadata (database or collection)
 bool append_entry(const char* metaFile, const char* name, const char* path, const FileType fileType, char* error) {
     const char* fileString = file_type_string(fileType);
     bool _status = false;
@@ -80,6 +90,7 @@ bool append_entry(const char* metaFile, const char* name, const char* path, cons
     return _status;
 }
 
+// Return string representation of file type enum
 const char* file_type_string(const FileType fileType) {
     switch (fileType) {
         case database: return "Database";
@@ -88,6 +99,7 @@ const char* file_type_string(const FileType fileType) {
     }
 }
 
+// Serialize JSON and write to disk
 bool dump_binary(const char* fileName, const cJSON* data, char* error) {
     if (!data || !cJSON_IsArray(data)) {
         get_error(error, "fatal: Invalid JSON object");
@@ -95,7 +107,6 @@ bool dump_binary(const char* fileName, const cJSON* data, char* error) {
     }
 
     char* _dataString = cJSON_PrintUnformatted(data);
-
     if (!_dataString) {
         get_error(error, "fatal: Failed to convert JSON to string");
         return false;
@@ -114,6 +125,7 @@ bool dump_binary(const char* fileName, const cJSON* data, char* error) {
     return true;
 }
 
+// Load and parse JSON file from disk (binary file)
 cJSON* load_binary(const char* fileName, char* error) {
     FILE* _file = fopen(fileName, "rb");
     if (!_file) {
@@ -151,7 +163,7 @@ cJSON* load_binary(const char* fileName, char* error) {
     return _json;
 }
 
-
+// Load and parse JSON file from disk (text file)
 cJSON* load_json(const char* file_name) {
     FILE* _file = fopen(file_name, "r");
     if (!_file) return NULL;
@@ -176,6 +188,7 @@ cJSON* load_json(const char* file_name) {
     return _dict;
 }
 
+// Save a cJSON object to a file
 bool save_json(const char* filename, cJSON* config, char* error) {
     if (!config || !cJSON_IsObject(config)) {
         get_error(error, "fatal: Invalid JSON object passed");
@@ -201,6 +214,7 @@ bool save_json(const char* filename, cJSON* config, char* error) {
     return true;
 }
 
+// Print documents based on filter conditions
 int print_filtered_documents(cJSON* collection, const char* key, const char* value, const Condition condition, char*** list, char* error) {
     if (condition > all) {
         get_error(error, "fatal: Invalid condition specified");
@@ -219,15 +233,19 @@ int print_filtered_documents(cJSON* collection, const char* key, const char* val
     if (_size == 0) *list = NULL;
     document = malloc(_size * sizeof(char*));
     int _index = 0;
+
     cJSON_ArrayForEach(_item, collection) {
         if (condition == all || key == NULL || value == NULL) {
             print_item(document, _index, _item);
         } else {
+            // Apply filter
             bool _match = false;
             cJSON* _field = cJSON_GetObjectItem(_item, key);
             if (!_field) continue;
+
             const bool isNumber = cJSON_IsNumber(_field);
             if (!isNumber && condition != equal) continue;
+
             if (isNumber) {
                 _match = is_related(_field->valuedouble, atof(value), condition);
             } else if (cJSON_IsString(_field)) {
@@ -240,13 +258,15 @@ int print_filtered_documents(cJSON* collection, const char* key, const char* val
             if (_match) {
                 print_item(document, _index, _item);
             }
-         }
+        }
         _index++;
     }
+
     *list = document;
     return _index;
 }
 
+// Convert cJSON object to string and store it
 void print_item(char** document, const int index, const cJSON* item) {
     char* str = cJSON_Print(item);
     if (str && document != NULL) {
@@ -255,6 +275,7 @@ void print_item(char** document, const int index, const cJSON* item) {
     }
 }
 
+// Load and return key names from a metadata JSON file
 int load_list(const char* metaFile, char*** list, char* error) {
     cJSON* _meta = load_json(metaFile);
     if (!_meta || !cJSON_IsObject(_meta)) {
@@ -267,11 +288,9 @@ int load_list(const char* metaFile, char*** list, char* error) {
     int _count = 0;
     cJSON* _item = NULL;
     cJSON_ArrayForEach(_item, _meta) _count++;
+
     names = malloc(_count * sizeof(char*));
-
     int index = 0;
-    _item = NULL;
-
     cJSON_ArrayForEach(_item, _meta) {
         if (!_item->string) continue;
         names[index] = _strdup(_item->string);
@@ -283,34 +302,35 @@ int load_list(const char* metaFile, char*** list, char* error) {
     return _count;
 }
 
-
-
+// Remove documents from a collection based on filter condition
 int remove_filtered_documents(cJSON* collection, const char* key, const char* value, const Condition condition, char* error) {
     if (!collection || !cJSON_IsArray(collection)) {
         get_error(error, "fatal: Not a valid array format");
         return -1;
     }
+
     const bool _filterEnabled = !(condition == all || key == NULL || value == NULL);
     const int _size = cJSON_GetArraySize(collection);
     int _deletedCount = 0;
 
+    // Iterate in reverse to avoid index shifting on deletion
     for (int i = _size - 1; i >= 0; i--) {
         bool _match = false;
         if (_filterEnabled) {
             cJSON* _item = cJSON_GetArrayItem(collection, i);
             cJSON* _field = cJSON_GetObjectItem(_item, key);
             if (!_field) continue;
-            const bool _isNumber = cJSON_IsNumber(_field);
 
-            // Only apply condition logic to numeric fields
+            const bool _isNumber = cJSON_IsNumber(_field);
             if (!_isNumber && condition != equal) continue;
+
             if (_isNumber) {
-                _match = is_related( _field->valuedouble, atof(value), condition);
+                _match = is_related(_field->valuedouble, atof(value), condition);
             } else if (cJSON_IsString(_field)) {
                 _match = strcmp(_field->valuestring, value) == 0;
             } else if (cJSON_IsBool(_field)) {
                 _match = ((strcmp(value, "true") == 0 && _field->valueint == 1) ||
-                        (strcmp(value, "false") == 0 && _field->valueint == 0));
+                          (strcmp(value, "false") == 0 && _field->valueint == 0));
             }
         } else {
             _match = true;
@@ -325,6 +345,7 @@ int remove_filtered_documents(cJSON* collection, const char* key, const char* va
     return _deletedCount;
 }
 
+// Update documents in a collection based on filter and specified action (add, drop, alter)
 int update_filtered_documents(cJSON *collection, const char *key, const char* value, const Condition condition, const Action action, const char *data, char* error) {
     if (!collection || !cJSON_IsArray(collection)) return -1;
 
@@ -346,7 +367,7 @@ int update_filtered_documents(cJSON *collection, const char *key, const char* va
                 _match = strcmp(_field->valuestring, value) == 0;
             } else if (cJSON_IsBool(_field)) {
                 _match = ((strcmp(value, "true") == 0 && _field->valueint == 1) ||
-                         (strcmp(value, "false") == 0 && _field->valueint == 0));
+                          (strcmp(value, "false") == 0 && _field->valueint == 0));
             } else {
                 continue;
             }
@@ -375,7 +396,7 @@ int update_filtered_documents(cJSON *collection, const char *key, const char* va
     return _updatedCount;
 }
 
-
+// Add new key-value pairs to a document
 bool add_action(cJSON* item, const char* data, char* error) {
     cJSON* _temp = cJSON_Parse(data);
     if (!_temp || !cJSON_IsObject(_temp)) {
@@ -394,13 +415,13 @@ bool add_action(cJSON* item, const char* data, char* error) {
     return true;
 }
 
-
+// Drop a field from a document
 bool drop_action(cJSON* item, const char* data, char* error) {
     cJSON* _temp = cJSON_Parse(data);
     if (!_temp || !cJSON_IsString(_temp)) {
         get_error(error, "fatal: Invalid data format '%s'", data);
         if (_temp) cJSON_Delete(_temp);
-        return false;;
+        return false;
     }
 
     cJSON_DeleteItemFromObject(item, _temp->valuestring);
@@ -408,7 +429,7 @@ bool drop_action(cJSON* item, const char* data, char* error) {
     return true;
 }
 
-
+// Alter a field in a document
 bool alter_action(cJSON* item, const char* data, char* error) {
     cJSON* _temp = cJSON_Parse(data);
     if (!_temp || !cJSON_IsObject(_temp)) {
@@ -435,10 +456,7 @@ bool alter_action(cJSON* item, const char* data, char* error) {
     } else if (cJSON_IsBool(_value)) {
         _newValue = cJSON_CreateBool(_value->valueint);
         _match = true;
-    } else if (cJSON_IsArray(_value)) {
-        _newValue = cJSON_Duplicate(_value, 1);
-        _match = true;
-    } else if (cJSON_IsObject(_value)) {
+    } else if (cJSON_IsArray(_value) || cJSON_IsObject(_value)) {
         _newValue = cJSON_Duplicate(_value, 1);
         _match = true;
     } else {
@@ -455,19 +473,19 @@ bool alter_action(cJSON* item, const char* data, char* error) {
     return _match;
 }
 
-
-
+// Compare two numeric values based on the provided condition
 bool is_related(const double value1, const double value2, const Condition condition) {
     switch (condition) {
-        case greaterThan:           return value1 > value2;
-        case greaterThanEqual:      return value1 >= value2;
-        case lessThan:              return value1 < value2;
-        case lessThanEqual:         return value1 <= value2;
-        case equal:                 return value1 == value2;
+        case greaterThan:      return value1 > value2;
+        case greaterThanEqual: return value1 >= value2;
+        case lessThan:         return value1 < value2;
+        case lessThanEqual:    return value1 <= value2;
+        case equal:            return value1 == value2;
         default: return false;
     }
 }
 
+// Path setters: Compose full paths to meta and data files
 
 void get_col_file(char* array, const char* databaseName, const char* collectionName) {
     char* _env = getenv("APPDATA");
@@ -489,6 +507,7 @@ void get_database_dir(char* array, const char* databaseName) {
     snprintf(array, MAX_PATH_LEN, "%s/%s/%s/%s", _env, PROTON_DB, DB, databaseName);
 }
 
+// Format a user-facing output message
 void get_message(char* buffer, const char* format, ...) {
     va_list args;
     va_start(args, format);
@@ -496,11 +515,13 @@ void get_message(char* buffer, const char* format, ...) {
     va_end(args);
 }
 
+// Format an internal error message
 void get_error(char* buffer, const char* format, ...) {
     va_list args;
     va_start(args, format);
     vsnprintf(buffer, MAX_ERROR_LEN, format, args);
     va_end(args);
 }
+
 
 

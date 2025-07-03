@@ -21,4 +21,5 @@ export Output update_all_documents(QueryConfig config);
 export Output update_documents(QueryConfig config);
 
 export void free_list(char** list, int size);
+
 #endif //STORAGE_ENGINE_H

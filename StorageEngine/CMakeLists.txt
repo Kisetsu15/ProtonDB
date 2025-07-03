@@ -6,8 +6,8 @@ set(CMAKE_C_STANDARD 11)
 add_library(StorageEngine SHARED
         Scripts/StorageEngine.c
         Scripts/StorageEngine.h
-        Scripts/cJSON.c
-        Scripts/cJSON.h
+        Scripts/cJSON/cJSON.c
+        Scripts/cJSON/cJSON.h
         Scripts/DatabaseUtils.c
         Scripts/DatabaseUtils.h
 )
