@@ -67,7 +67,7 @@ namespace ProtonDB.Server {
                     return result.GetOutput();
                 }
 
-                if (Profiles.ValidateAccess(name, session)) {
+                if (!Profiles.ValidateAccess(name, session)) {
                     return ["Access denied to the database"];
                 }
 
