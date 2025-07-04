@@ -10,7 +10,7 @@ A modular, embedded NoSQL database engine built with C and C#. It includes a TCP
 - C# interop via `DllImport`
 - Secure profile-based access (admin/user)
 - TCP server with command routing
-- Python & C# client wrappers
+- Python, C++, C# client wrappers
 - Built-in command-line shell
 - NSSM/Windows Service ready
 - Setup script via Inno Installer
@@ -19,34 +19,56 @@ A modular, embedded NoSQL database engine built with C and C#. It includes a TCP
 
 ## 🧭 Structure
 
-| Folder                | Description                            |
+| Folder               | Description                            |
 |----------------------|----------------------------------------|
 | `ProtonDB.Client`    | C# TCP client interface                |
 | `ProtonDB.Server`    | TCP server and command router          |
 | `ProtonDB.Shell`     | Terminal shell for interactive usage   |
 | `ProtonDB.Service`   | Background service variant             |
 | `StorageEngine`      | Core NoSQL engine (C)                  |
-| `Wrapper/Python/`    | Client wrappers                        |
-| `Setup/`             | Inno Setup script                      |
+| `Wrapper`            | Client wrappers                        |
+| `Setup`              | Inno Setup script                      |
 
 ---
 
 ## 🚀 Getting Started
 
-### Build the storage engine
+### 1. Download & Install
 
-```bash
+- Run the provided installer or clone and build manually
+- Start the ProtonDB server using the provided binary or as a service
+- Use the interactive ProtonDB Shell or connect via client packages
+
+### (OR) Build Manually
+
+### 1. Clone ProtonDb
+
+```
+git clone https://github.com/Kisetsu15/ProtonDB
+```
+
+### 2. Build the storage engine
+
+```
 cd StorageEngine
 make
 ````
 
-### Run the server
+### 3. Run the server
 
-```bash
-dotnet run --project ProtonDB.Server
+```
+dotnet run --project ProtonDB.Service (or) ProtonDB.Server
 ```
 
 Or install with `nssm` or use the installer from Releases.
+
+---
+
+## 💬 Query Format
+
+All query follow the format:
+
+> object.operation(argument)
 
 ---
 
@@ -54,12 +76,12 @@ Or install with `nssm` or use the installer from Releases.
 
 Communication is done via **UTF-8 JSON lines** over TCP:
 
-```json
+```
 // Request
-{ "command": "QUERY", "data": "document.insert(...)" }
+{ "Command": "QUERY", "Data": "document.insert(...)" }
 
 // Response
-{ "status": "ok", "message": "Saved", "result": ["..."] }
+{ "Status": "ok", "Message": "Saved", "Result": ["..."] }
 ```
 
 ---
@@ -82,11 +104,21 @@ Communication is done via **UTF-8 JSON lines** over TCP:
 
 ## 🧪 Example
 
-```csharp
-var conn = Connection.Connect("localhost", 9090, "admin", "admin");
-conn.Query("document.insert({ \"name\": \"Kisetsu\" })");
-var data = conn.FetchAll();
 ```
+profile.create("john","mypassword","user")
+database.create("StoreDB")
+collection.create("Items")
+Items.insert("{
+  "item": "Notebook",
+  "price": 10
+}")
+Items.print()
+```
+
+## Documentation
+
+* [C# Client](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/C%23%20Client-README.md)
+* [pyproton](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/pyproton-README.txt)
 
 ---
 
