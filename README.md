@@ -117,6 +117,7 @@ Items.print()
 
 ## Documentation
 
+* [User Documentation](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/ProtonDB_User_Documentation.pdf)
 * [C# Client](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/C%23%20Client-README.md)
 * [pyproton](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/pyproton-README.txt)
 
