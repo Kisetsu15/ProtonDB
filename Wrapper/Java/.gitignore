@@ -1,0 +1,27 @@
+# Compiled class files
+*.class
+
+# Maven target directory
+target/
+
+# Maven generated files
+dependency-reduced-pom.xml
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
