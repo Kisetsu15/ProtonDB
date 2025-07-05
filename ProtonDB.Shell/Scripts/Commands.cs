@@ -33,6 +33,7 @@ namespace ProtonDB.Shell {
             Terminal.WriteLine("  create(<collection>)                          Create a new collection");
             Terminal.WriteLine("  drop(<collection>)                            Drop a collection");
             Terminal.WriteLine("  list()                                        List all collections in the current database");
+            Terminal.WriteLine("  list(<database>)                              List all collections in the specified database");
 
             Terminal.WriteLine("\nDocument Operations: <collection>.<operation>(argument)");
             Terminal.WriteLine("  insert(data)                                  Insert a document into collection");
