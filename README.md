@@ -36,7 +36,7 @@ A modular, embedded NoSQL database engine built with C and C#. It includes a TCP
 ### 1. Download & Install
 
 - Run the provided installer or clone and build manually
-- Start the ProtonDB server using the provided binary or as a service
+- The ProtonDB service starts running in the background after installation
 - Use the interactive ProtonDB Shell or connect via client packages
 
 ### (OR) Build Manually
