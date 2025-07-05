@@ -136,5 +136,7 @@ MIT — Free to modify and redistribute.
 ---
 
 ## 🤝 Contributions
+* pyproton for tcp by @sarveshsarvs in https://github.com/Kisetsu15/ProtonDB/pull/4
+* C++ Client by @allanhanan in https://github.com/Kisetsu15/ProtonDB/pull/5
 
 Fork and PR welcome. Please test against TCP + Shell modes.
