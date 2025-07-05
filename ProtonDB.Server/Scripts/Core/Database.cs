@@ -46,7 +46,9 @@ namespace ProtonDB.Server {
                 if (!Profiles.ValidateAccess(name, session)) return ["Access denied to the database"];
 
                 if (!Meta.GetDatabaseList().ContainsKey(name)) {
-                    return Linker(name, StorageEngine.create_database, $"Switched to database: {name}");
+                    (string[] result, bool status) = Linker(name, StorageEngine.create_database, $"Switched to database: {name}");
+                    if (status) session.CurrentDatabase = name;
+                    return result;
                 }
 
                 session.CurrentDatabase = name;
@@ -95,7 +97,20 @@ namespace ProtonDB.Server {
             /// <param name="func">The StorageEngine function to execute.</param>
             /// <param name="message">Optional message to include in the result.</param>
             /// <returns>Status or error messages.</returns>
-            private static string[] Linker(string name, Func<QueryConfig, Output> func, string? message = null) {
+            private static (string[] result, bool status) Linker(string name, Func<QueryConfig, Output> func, string message) {
+                if (string.IsNullOrEmpty(name)) {
+                    return (["fatal: Database name cannot be empty"], false);
+                }
+                Result result = StorageEngine.Link(
+                    new QueryConfig {
+                        databaseName = name,
+                    },
+                    func
+                );
+                return (result.GetOutput(message), result.success);
+            }
+
+            private static string[] Linker(string name, Func<QueryConfig, Output> func) {
                 if (string.IsNullOrEmpty(name)) {
                     return ["fatal: Database name cannot be empty"];
                 }
@@ -105,7 +120,7 @@ namespace ProtonDB.Server {
                     },
                     func
                 );
-                return result.GetOutput(message);
+                return result.GetOutput();
             }
 
             /// <summary>
