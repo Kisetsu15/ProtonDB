@@ -1,5 +1,8 @@
 # 🐍 PyProtonClient – ProtonDB Python Wrapper (Subprocess Version)
+
 PyProtonClient is a Python wrapper for the ProtonDB database server, designed to communicate directly with the compiled .exe server using standard input/output (subprocess). This approach simulates an interactive session and supports sending JSON-based commands and receiving responses, ideal for automation or integration testing.
+
+---
 
 ## 🚀 Features
 * Launches ProtonDB.exe and manages its lifecycle
@@ -7,6 +10,8 @@ PyProtonClient is a Python wrapper for the ProtonDB database server, designed to
 * Sends JSON commands using ProtonDB's CLI protocol
 * Supports database, collection, and document operations
 * Thread-safe output reading and command handling
+  
+---
 
 ## 📦 Requirements
 * Python 3.6+
@@ -14,6 +19,8 @@ PyProtonClient is a Python wrapper for the ProtonDB database server, designed to
 * ProtonDB compiled .exe (e.g. ProtonDB.exe)
 
 * Windows system (tested with PowerShell)
+  
+---
 
 ## 🛠️ Setup
 * Ensure ProtonDB.exe is present and accessible (e.g., D:/STUDYYY/ProtonDB/ProtonDB.exe)
@@ -26,6 +33,8 @@ from pyproton import PyProtonClient
 
 client = PyProtonClient("D:/STUDYYY/ProtonDB/ProtonDB.exe", username="admin123", password="welcome")
 ```
+---
+
 ## 📘 Usage
 
 ```
