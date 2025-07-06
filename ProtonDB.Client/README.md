@@ -20,15 +20,14 @@
 
 ## 📦 Installation
 
-If published to NuGet:
 
-```bash
+```
 dotnet add package ProtonDB.Client
 ```
 
 Or reference it manually in your project:
 
-```xml
+```
 <ProjectReference Include="path/to/ProtonDB.Client.csproj" />
 ```
 
@@ -36,7 +35,7 @@ Or reference it manually in your project:
 
 ## 🛠️ Usage
 
-```csharp
+```
 using ProtonDB.Client;
 
 var conn = Connection.Connect("127.0.0.1", 9090, "admin", "yourpassword");
@@ -67,7 +66,7 @@ cursor.Quit();
 
 Login is handled via:
 
-```csharp
+```
 Connection.Connect("127.0.0.1", 9090, "username", "password");
 ```
 

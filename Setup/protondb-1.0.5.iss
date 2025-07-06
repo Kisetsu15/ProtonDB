@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "ProtonDB"
-#define MyAppVersion "1.0.4"
+#define MyAppVersion "1.0.5"
 #define MyAppPublisher "Kisetsu Productions"
 #define MyAppURL "https://github.com/Kisetsu15/ProtonDB"
 #define MyAppExeName "ProtonDB.exe"
@@ -33,7 +33,7 @@ DisableProgramGroupPage=yes
 LicenseFile=D:\Projects\ProtonDB\LICENSE.txt
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=admin
-OutputBaseFilename=ProtonDB Setup 1.0.4
+OutputBaseFilename=ProtonDB Setup 1.0.5
 SetupIconFile=D:\Projects\ProtonDB\Assets\protondb_setup_icon.ico
 SolidCompression=yes
 WizardStyle=modern

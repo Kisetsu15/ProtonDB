@@ -10,7 +10,7 @@ A modular, embedded NoSQL database engine built with C and C#. It includes a TCP
 - C# interop via `DllImport`
 - Secure profile-based access (admin/user)
 - TCP server with command routing
-- Python, C++, C# client wrappers
+- Python, C++, Java client wrappers
 - Built-in command-line shell
 - NSSM/Windows Service ready
 - Setup script via Inno Installer
@@ -118,8 +118,9 @@ Items.print()
 ## Documentation
 
 * [User Documentation](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/ProtonDB_User_Documentation.pdf)
-* [C# Client](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/C%23%20Client-README.md)
-* [pyproton](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/pyproton-README.txt)
+* [C# Client](https://github.com/Kisetsu15/ProtonDB/blob/master/ProtonDB.Client/README.md)
+* [pyproton](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/Python/pyproton/README.md)
+* [Java Wrapper](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/Java/README.md)
 
 ---
 
