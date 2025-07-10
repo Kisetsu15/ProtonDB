@@ -2,7 +2,7 @@ using Kisetsu.Utils;
 using System.Runtime.InteropServices;
 
 namespace ProtonDB.Shell {
-    public static class ProtonMeta {
+    public static class Meta {
         private const string PROTON_DB = "ProtonDB";
 
         public static void Loading() {

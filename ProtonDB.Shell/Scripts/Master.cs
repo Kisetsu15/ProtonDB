@@ -27,14 +27,16 @@ namespace ProtonDB.Shell {
         };
 
         public static void Main(string[] args) {
-            ProtonMeta.Loading();
+            Meta.Loading();
             if (args.Length > MAX_ARGUMENT) {
                 Terminal.WriteLine("ProtonDB takes only one argument. Usage: ProtonDB <command>");
                 return;
             }
 
             if (args.Length == MAX_ARGUMENT) {
-                var cmdResult = CommandExecutor(args[0]);
+                string input = args[0].Trim().ToLower();
+                if (input == Token.quit || input == Token._quit) return;
+                var cmdResult = CommandExecutor(input);
                 if (cmdResult == Operation.End || cmdResult == Operation.Skip) return;
                 if (cmdResult == Operation.Noop) Terminal.WriteLine("Invalid command. Use: '--help'.");
                 return;
