@@ -1,9 +1,44 @@
-﻿using Kisetsu.Utils;
+﻿// -------------------------------------------------------------------------------------------------
+//  File: Commands.cs
+//  Namespace: ProtonDB.Shell
+//  Description:
+//      Provides built-in shell commands for ProtonDB, including displaying help, version information,
+//      clearing the console, and exiting the application. This static class centralizes user-facing
+//      command logic for the interactive shell, ensuring consistent behavior and output formatting.
+//
+//  Public Methods:
+//      - Version: Displays the current version of ProtonDB in the terminal.
+//      - Help:    Prints usage instructions and a list of available commands with descriptions.
+//      - Quit:    Prints an exit message to the terminal, indicating that ProtonDB is closing.
+//      - Clear:   Clears the console window.
+//
+//  Usage Example:
+//      Commands.Help();      // Show help information
+//      Commands.Version();   // Show version information
+//      Commands.Quit();      // Print exit message
+//      Commands.Clear();     // Clear the console
+//
+//  Dependencies:
+//      - Kisetsu.Utils.Terminal: For terminal output and input handling.
+//      - System.Reflection: For retrieving assembly version information.
+// -------------------------------------------------------------------------------------------------
+
+using Kisetsu.Utils;
 using System.Reflection;
 
 namespace ProtonDB.Shell {
+    /// <summary>
+    /// Provides built-in shell commands for ProtonDB, such as displaying help, version information, clearing the console, and exiting the application.
+    /// </summary>
     public static class Commands {
+        /// <summary>
+        /// Displays the current version of ProtonDB in the terminal.
+        /// </summary>
         public static void Version() => Terminal.WriteLine($" ProtonDB v{Assembly.GetExecutingAssembly().GetName().Version}\n");
+
+        /// <summary>
+        /// Displays help information, including usage, available commands, and their descriptions.
+        /// </summary>
         public static void Help() {
             Terminal.WriteLine("\nUsage: protondb <command>");
             Terminal.WriteLine("\nCommands:");
@@ -50,8 +85,14 @@ namespace ProtonDB.Shell {
 
         }
 
+        /// <summary>
+        /// Prints an exit message to the terminal, indicating that ProtonDB is closing.
+        /// </summary>
         public static void Quit() => Terminal.WriteLine("Exiting ProtonDB...\n");
 
+        /// <summary>
+        /// Clears the console window.
+        /// </summary>
         public static void Clear() => Console.Clear();
     }
 }
