@@ -2,7 +2,6 @@
 #pragma once
 
 #include <string>
-#include <optional>
 #include "protondb/Connection.hpp"
 #include "protondb/Exception.hpp"
 #include "protondb/Config.hpp"
@@ -14,54 +13,51 @@
 
 namespace protondb {
 
-/// A simple command cursor over a live Connection.
-/// Sends single‐line commands or raw JSON, and parses the response.
+/// Cursor manages a live query session over a ProtonDB connection.
+/// It supports executing commands, fetching results, and parsing JSON responses.
 class Cursor {
 public:
-    /// Construct a cursor that uses an open, authenticated Connection.
     explicit Cursor(Connection& conn);
 
     Cursor(const Cursor&) = delete;
     Cursor& operator=(const Cursor&) = delete;
-    Cursor(Cursor&&) = default;
-    Cursor& operator=(Cursor&&) = default;
-
+    Cursor(Cursor&&) noexcept = default;
+    Cursor& operator=(Cursor&&) noexcept = default;
     ~Cursor() = default;
 
-    /// Send a text‐DSL command (just the command itself).
-    /// Returns the full JSON response string.
+    /// Execute a DSL command (e.g., SELECT * FROM foo)
     std::string execute(const std::string& command);
 
-    /// Send raw JSON (must conform to protocol: {"command":...,"data":...}).
-    /// Returns the full JSON response string.
+    /// Execute a raw JSON string (must conform to protocol)
     std::string executeRaw(const std::string& rawJson);
 
-    /// Send an explicit FETCH command.
+    /// Send a FETCH command to retrieve next result batch
     std::string fetch();
 
+    /// Set fine-grained socket timeouts via the underlying connection.
+    void setTimeouts(int connectMs, int sendMs, int recvMs);
 
-    /// Retrieve the last full JSON response (unparsed).
+    /// Access the last raw JSON response as string
     const std::string& response() const;
 
-    /// Retrieve the “result” field from the last response.
-    /// If JSON support is disabled, returns the raw response.
+    /// Extract the `result` field from the last response (if JSON mode)
     std::string result() const;
 
-    /// Retrieve the “status” field from the last response.
+    /// Extract the `status` field from the last response
     std::string status() const;
 
-    /// Retrieve the “message” field from the last response.
+    /// Extract the `message` field from the last response
     std::string message() const;
 
 private:
-    Connection&  conn_;
-    std::string  lastResponse_;
+    Connection& conn_;
+    std::string lastResponse_;
 
 #if PROTONDB_USE_JSON
-    json         lastJson_;
+    json lastJson_;
 #endif
 
-    /// Parse lastResponse_ into lastJson_ (if enabled) or validate format.
+    /// Parses lastResponse_ into lastJson_ and validates protocol correctness
     void parseResponse_();
 };
 
