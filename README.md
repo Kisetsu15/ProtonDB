@@ -119,8 +119,10 @@ Items.print()
 
 * [User Documentation](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/ProtonDB_User_Documentation.pdf)
 * [C# Client](https://github.com/Kisetsu15/ProtonDB/blob/master/ProtonDB.Client/README.md)
-* [pyproton](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/Python/pyproton/README.md)
-* [Java Wrapper](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/Java/README.md)
+* [Python Client](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/Python/pyproton/README.md)
+* [C++ Client](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/cpp/README.md)
+* [Java Client](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/Java/README.md)
+  
 
 ---
 
@@ -138,7 +140,7 @@ MIT — Free to modify and redistribute.
 
 ## 🤝 Contributions
 * pyproton by [@sarveshsarvs](https://github.com/sarveshsarvs) in https://github.com/Kisetsu15/ProtonDB/pull/4
-* C++ Client by [@allanhanan](https://github.com/allanhanan) in https://github.com/Kisetsu15/ProtonDB/pull/7
+* C++ Client by [@allanhanan](https://github.com/allanhanan) in https://github.com/Kisetsu15/ProtonDB/pull/8
 * Java Wrapper by [@StellarStacker](https://github.com/StellarStacker) in https://github.com/Kisetsu15/ProtonDB/pull/6
 
 Fork and PR welcome. Please test against TCP + Shell modes.
