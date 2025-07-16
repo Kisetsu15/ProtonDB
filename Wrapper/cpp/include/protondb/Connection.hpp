@@ -3,58 +3,72 @@
 
 #include <string>
 #include <chrono>
-#include <stdexcept>
+#include <memory>
 #include "protondb/Exception.hpp"
 #include "protondb/Config.hpp"
+#include "protondb/internal/SocketHandle.hpp"
 
 namespace protondb {
 
-/// Manages a TCP/TLS connection and authentication handshake to ProtonDB.
+/// Manages a TCP (and optionally TLS) connection and LOGIN handshake to ProtonDB.
 class Connection {
 public:
     Connection() = default;
     Connection(const Connection&) = delete;
     Connection& operator=(const Connection&) = delete;
+
     Connection(Connection&&) noexcept;
     Connection& operator=(Connection&&) noexcept;
+
     ~Connection();
 
-    /// Establishes socket, performs LOGIN, and returns a live connection.
-    /// Throws ConnectionError, TimeoutError, ServerError or ProtocolError on failure.
+    /// Establishes a socket connection and performs LOGIN.
+    /// Throws ConnectionError, TimeoutError, or ProtocolError on failure.
     static Connection Connect(const std::string& host,
                               int port,
                               const std::string& username,
                               const std::string& password);
 
-    /// Close the socket and invalidate this Connection.
+    /// Closes the socket and invalidates the connection.
     void close();
 
-    /// True if TCP/TLS socket is open (and LOGIN succeeded).
-    bool isConnected() const;
+    /// Returns true if socket is open and LOGIN has succeeded.
+    [[nodiscard]] bool isConnected() const noexcept;
 
-    /// Set read/write timeout (milliseconds) on the socket.
-    void setTimeout(int ms);
+    /// Sets unified read/write/connect timeout (legacy compatibility).
+    void setTimeout(int timeoutMs);
 
-    /// Number of times to retry a send/receive on transient errors.
-    void setRetry(int count);
+    /// Sets individual timeouts for connect, send, and receive (in milliseconds).
+    void setTimeouts(int connectMs, int sendMs, int recvMs);
 
-    /// If enabled, auto-reconnect & re-login on disconnect.
-    void autoReconnect(bool enabled);
 
-    /// Placeholder for TLS setup (certificate bundle path).
+    /// Sets number of retries for transient send/recv failures.
+    void setRetry(int retries);
+
+    /// Enables automatic reconnect and login if the socket breaks.
+    void enableAutoReconnect(bool enable);
+
+    /// Enables TLS support (unimplemented placeholder).
     void enableTLS(const std::string& certPath);
 
-    /// Send a single JSON line to the server and return its response line.
+    /// Sends a JSON-encoded line to the server and waits for response.
     std::string sendLine(const std::string& jsonLine);
 
-    /// Read a single UTF-8 JSON line from the server.
+    /// Reads a single UTF-8 line from the server (blocking).
     std::string readLine();
-    
-    /// Get the Current Host IP of the Server
-    std::string getHost() const { return host_; }
 
-    /// Get the Current Port of the Server
-    int getPort() const { return port_; }
+    /// Returns the hostname of the connected server.
+    [[nodiscard]] const std::string& host() const noexcept { return host_; }
+
+    /// Returns the port of the connected server.
+    [[nodiscard]] int port() const noexcept { return port_; }
+
+    [[nodiscard]] int connectTimeout() const noexcept { return connectTimeoutMs_; }
+    [[nodiscard]] int sendTimeout() const noexcept    { return sendTimeoutMs_; }
+    [[nodiscard]] int recvTimeout() const noexcept    { return recvTimeoutMs_; }
+
+    [[nodiscard]] const std::string& getHost() const noexcept { return host_; }
+    [[nodiscard]] int getPort() const noexcept { return port_; }
 
 
 private:
@@ -62,18 +76,21 @@ private:
 
     std::string host_;
     int         port_          = 0;
-    int         sockfd_        = -1;
-    bool        connected_     = false;
-    int         timeoutMs_     = 0;
+    int         connectTimeoutMs_ = 0;
+    int         sendTimeoutMs_    = 0;
+    int         recvTimeoutMs_    = 0;
     int         retryCount_    = 0;
     bool        autoReconnect_ = false;
-    std::string certPath_;
 
-    std::string user_;   // saved for auto-reconnect
-    std::string pass_;   // saved for auto-reconnect
+    std::string certPath_;
+    std::string user_;         // cached for reconnect
+    std::string pass_;         // cached for reconnect
+
+    std::unique_ptr<protondb::internal::SocketHandle> socket_;  // RAII-managed socket
+
 
 #if PROTONDB_PLATFORM_WINDOWS
-    bool        wsaInit_ = false;  // WSAStartup state
+    bool wsaInitialized_ = false; // Track WSAStartup state (for Windows only)
 #endif
 };
 

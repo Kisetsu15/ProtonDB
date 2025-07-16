@@ -1,5 +1,3 @@
-// tests/test_script_runner.cpp
-
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -13,6 +11,7 @@ using namespace protondb;
 
 static int failures = 0;
 
+// Assertion macros for logging
 #define ASSERT_TRUE_LOG(cond) \
     do { \
         if (!(cond)) { \
@@ -40,12 +39,14 @@ static int failures = 0;
             ++failures; return; } \
     } while (0)
 
+// Test: Invalid script file throws error
 void testInvalidScriptFileThrows() {
     auto conn = Connection::Connect("127.0.0.1", 9090, "admin123", "welcome");
     ScriptRunner runner(conn);
     ASSERT_THROW_LOG(runner.executeScript("nonexistent_file.txt"), ScriptParseError);
 }
 
+// Test: Executes a stream with a live error (closed socket)
 void testExecuteStreamWithLiveErrors() {
     auto conn = Connection::Connect("127.0.0.1", 9090, "admin123", "welcome");
     ScriptRunner runner(conn);
@@ -56,7 +57,7 @@ void testExecuteStreamWithLiveErrors() {
     ASSERT_THROW_LOG(runner.executeStream(ss), ConnectionError);
 }
 
-
+// Test: Executes stream with error callback
 void testExecuteStreamWithErrorCallback() {
     auto conn = Connection::Connect("127.0.0.1", 9090, "admin123", "welcome");
     ScriptRunner runner(conn);

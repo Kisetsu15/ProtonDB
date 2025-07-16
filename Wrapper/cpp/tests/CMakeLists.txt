@@ -1,5 +1,3 @@
-# tests/CMakeLists.txt
-
 cmake_minimum_required(VERSION 3.14)
 project(ProtonDBTests CXX)
 
@@ -30,8 +28,13 @@ if (PROTONDB_USE_JSON)
     target_compile_definitions(protondb PRIVATE PROTONDB_USE_JSON=1)
 endif()
 
+# Platform-specific configuration
 if (WIN32)
+    add_definitions(-DPROTONDB_PLATFORM_WINDOWS)
     target_link_libraries(protondb PRIVATE ws2_32)
+else()
+    add_definitions(-DPROTONDB_PLATFORM_UNIX)
+    # You may need to add additional Unix-specific libraries, e.g., pthread if needed
 endif()
 
 # Discover tests/test_*.cpp
@@ -49,8 +52,11 @@ foreach(test_file IN LISTS TEST_SOURCES)
             "${ROOT_DIR}/third_party"
         )
 
+        # Platform-specific linking for each test
         if(WIN32)
             target_link_libraries(${test_src_name} PRIVATE ws2_32)
+        else()
+            # Add Unix-specific libraries for testing if required
         endif()
 
         enable_testing()
