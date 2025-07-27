@@ -4,8 +4,8 @@ This Python wrapper provides a simple interface to interact with ProtonDB, a cus
 It wraps ProtonDB commands into Python method calls, allowing you to execute database, collection, document, user, and utility commands through a consistent API.
 
 ---
-## How to install
-pip install ProtonDBclient
+# How to install
+## pip install ProtonDBclient
 
 run this in your windows shell!
 
