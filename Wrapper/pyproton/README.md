@@ -59,10 +59,6 @@ client.driver.execute('''users.insert(.
   {"name": "Alice", "age": 30}
 .)''')
 
-## Installation
-pip install protondb-python
-
----
 
 Notes:
 - Use client.driver.execute("<command>") to send any ProtonDB command string.
