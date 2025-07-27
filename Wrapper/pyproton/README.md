@@ -60,7 +60,7 @@ client.driver.execute('''users.insert(.
 .)''')
 
 
-##📝Notes:
+## 8.📝Notes:
 - Use client.driver.execute("<command>") to send any ProtonDB command string.
 - Keep the command strings exactly as ProtonDB expects (quotes, parentheses, etc.).
 - Close connection with client.close() after your operations to free resources.
