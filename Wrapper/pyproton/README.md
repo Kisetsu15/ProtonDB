@@ -13,7 +13,3 @@ A Python client library for interacting with ProtonDB databases.
 - 📊 Built-in response validation
 - 🧪 Comprehensive test coverage
 
-## Installation
-
-```bash
-pip install protondb-python
