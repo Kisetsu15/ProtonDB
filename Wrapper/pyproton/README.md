@@ -7,6 +7,8 @@ It wraps ProtonDB commands into Python method calls, allowing you to execute dat
 ## How to install
 pip install ProtonDBclient
 
+run this in your windows shell!
+
 ## Complete Command Reference
 
 ## 1. Initialization
