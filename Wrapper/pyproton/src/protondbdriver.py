@@ -1,7 +1,7 @@
 import json
 from typing import Optional, Dict, Any, Union
-from connection import Connection
-from ProtonResponse import ProtonResponse
+from .connection import Connection
+from .ProtonResponse import ProtonResponse
 
 class ProtonDBDriver:
     def __init__(self, connection):
