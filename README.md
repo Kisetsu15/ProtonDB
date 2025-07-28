@@ -119,7 +119,7 @@ Items.print()
 
 * [User Documentation](https://github.com/Kisetsu15/ProtonDB/blob/master/Document/ProtonDB_User_Documentation.pdf)
 * [C# Client](https://github.com/Kisetsu15/ProtonDB/blob/master/ProtonDB.Client/README.md)
-* [pyproton](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/pyproton/README.md)
+* [pyprotondb](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/pyprotondb/README.md)
 * [C++ Client](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/cpp/README.md)
 * [Java Wrapper](https://github.com/Kisetsu15/ProtonDB/blob/master/Wrapper/Java/README.md)
   
