@@ -139,7 +139,7 @@ MIT — Free to modify and redistribute.
 ---
 
 ## 🤝 Contributions
-* pyproton by [@sarveshsarvs](https://github.com/sarveshsarvs) in https://github.com/Kisetsu15/ProtonDB/pull/9
+* pyproton by [@sarveshsarvs](https://github.com/sarveshsarvs) in https://github.com/Kisetsu15/ProtonDB/pull/11
 * C++ Client by [@allanhanan](https://github.com/allanhanan) in https://github.com/Kisetsu15/ProtonDB/pull/8
 * Java Wrapper by [@StellarStacker](https://github.com/StellarStacker) in https://github.com/Kisetsu15/ProtonDB/pull/6
 
